@@ -12,6 +12,7 @@
 
 ## Release Process
 
+- Update the app version before tagging and packaging.
 - Create a new git tag for the release version before packaging, for example `git tag v2.0.1`.
 - Build the release app with `xcodebuild -workspace Clipy.xcworkspace -scheme Clipy -configuration Release -derivedDataPath build/DerivedData ENABLE_TESTABILITY=YES build`, then package `build/DerivedData/Build/Products/Release/Clipy.app`.
 - Commit the source changes and push both the branch and the tag to `origin`.
