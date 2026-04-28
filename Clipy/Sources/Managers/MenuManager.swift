@@ -21,6 +21,7 @@ final class MenuManager: NSObject {
     // MARK: - Properties
     // Menus
     fileprivate var clipMenu: NSMenu?
+    fileprivate var statusMenu: NSMenu?
     fileprivate var historyMenu: NSMenu?
     fileprivate var snippetMenu: NSMenu?
     // StatusMenu
@@ -37,6 +38,8 @@ final class MenuManager: NSObject {
     fileprivate let realm = try! Realm()
     fileprivate var clipToken: NotificationToken?
     fileprivate var snippetToken: NotificationToken?
+    fileprivate var clipPreviewTextByItem = [ObjectIdentifier: String]()
+    fileprivate let previewWindowController = MenuTooltipWindowController()
 
     // MARK: - Enum Values
     enum StatusType: Int {
@@ -175,20 +178,30 @@ private extension MenuManager {
 // MARK: - Menus
 private extension MenuManager {
      func createClipMenu() {
+        clipPreviewTextByItem.removeAll()
+        previewWindowController.hide()
+
         clipMenu = NSMenu(title: Constants.Application.name)
+        statusMenu = NSMenu(title: Constants.Application.name)
         historyMenu = NSMenu(title: Constants.Menu.history)
         snippetMenu = NSMenu(title: Constants.Menu.snippet)
+
+        clipMenu?.delegate = self
+        historyMenu?.delegate = self
 
         addHistoryItems(clipMenu!)
         addHistoryItems(historyMenu!)
 
         addSnippetItems(clipMenu!, separateMenu: true)
+        addSnippetItems(statusMenu!, separateMenu: false)
         addSnippetItems(snippetMenu!, separateMenu: false)
 
         clipMenu?.addItem(NSMenuItem.separator())
+        statusMenu?.addItem(NSMenuItem.separator())
 
         if AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.addClearHistoryMenuItem) {
             clipMenu?.addItem(NSMenuItem(title: L10n.clearHistory, action: #selector(AppDelegate.clearAllHistory)))
+            statusMenu?.addItem(NSMenuItem(title: L10n.clearHistory, action: #selector(AppDelegate.clearAllHistory)))
         }
 
         clipMenu?.addItem(NSMenuItem(title: L10n.editSnippets, action: #selector(AppDelegate.showSnippetEditorWindow)))
@@ -196,11 +209,34 @@ private extension MenuManager {
         clipMenu?.addItem(NSMenuItem.separator())
         clipMenu?.addItem(NSMenuItem(title: L10n.quitClipy, action: #selector(AppDelegate.terminate)))
 
-        statusItem?.menu = clipMenu
+        statusMenu?.addItem(NSMenuItem(title: L10n.editSnippets, action: #selector(AppDelegate.showSnippetEditorWindow)))
+        statusMenu?.addItem(NSMenuItem(title: L10n.preferences, action: #selector(AppDelegate.showPreferenceWindow)))
+        statusMenu?.addItem(NSMenuItem.separator())
+        statusMenu?.addItem(NSMenuItem(title: L10n.quitClipy, action: #selector(AppDelegate.terminate)))
+
+        statusItem?.menu = statusMenu
     }
 
     func menuItemTitle(_ title: String, listNumber: NSInteger, isMarkWithNumber: Bool) -> String {
         return (isMarkWithNumber) ? "\(listNumber). \(title)" : title
+    }
+
+    func imageMenuItemTitle(_ title: String, listNumber: NSInteger, isMarkWithNumber: Bool, image: NSImage?) -> NSAttributedString {
+        let prefix = (isMarkWithNumber) ? "\(listNumber). " : ""
+        let attributed = NSMutableAttributedString(string: prefix,
+                                                   attributes: [.font: NSFont.menuFont(ofSize: 0)])
+
+        if let image {
+            let attachment = NSTextAttachment()
+            attachment.image = image
+            attachment.bounds = NSRect(x: 0, y: -2, width: image.size.width, height: image.size.height)
+            attributed.append(NSAttributedString(attachment: attachment))
+            attributed.append(NSAttributedString(string: " "))
+        }
+
+        attributed.append(NSAttributedString(string: title,
+                                             attributes: [.font: NSFont.menuFont(ofSize: 0)]))
+        return attributed
     }
 
     func makeSubmenuItem(_ count: Int, start: Int, end: Int, numberOfItems: Int) -> NSMenuItem {
@@ -253,6 +289,7 @@ private extension MenuManager {
 
         return titleString as String
     }
+
 }
 
 // MARK: - Clips
@@ -332,28 +369,40 @@ private extension MenuManager {
         let clipString = clip.title
         let title = trimTitle(clipString)
         let titleWithMark = menuItemTitle(title, listNumber: listNumber, isMarkWithNumber: isMarkWithNumber)
+        let imageOnlyTitle = menuItemTitle("(Image)", listNumber: listNumber, isMarkWithNumber: isMarkWithNumber)
+        let fileOnlyTitle = menuItemTitle("(Filenames)", listNumber: listNumber, isMarkWithNumber: isMarkWithNumber)
 
         let menuItem = NSMenuItem(title: titleWithMark, action: #selector(AppDelegate.selectClipMenuItem(_:)), keyEquivalent: keyEquivalent)
         menuItem.representedObject = clip.dataHash
-
-        if isShowToolTip {
-            let maxLengthOfToolTip = AppEnvironment.current.defaults.integer(forKey: Constants.UserDefaults.maxLengthOfToolTip)
-            let toIndex = (clipString.count < maxLengthOfToolTip) ? clipString.count : maxLengthOfToolTip
-            menuItem.toolTip = (clipString as NSString).substring(to: toIndex)
-        }
+        clipPreviewTextByItem[ObjectIdentifier(menuItem)] = clipString
+        menuItem.toolTip = nil
 
         if primaryPboardType == .deprecatedTIFF {
-            menuItem.title = menuItemTitle("(Image)", listNumber: listNumber, isMarkWithNumber: isMarkWithNumber)
+            menuItem.title = imageOnlyTitle
         } else if primaryPboardType == .deprecatedPDF {
             menuItem.title = menuItemTitle("(PDF)", listNumber: listNumber, isMarkWithNumber: isMarkWithNumber)
         } else if primaryPboardType == .deprecatedFilenames && title.isEmpty {
-            menuItem.title = menuItemTitle("(Filenames)", listNumber: listNumber, isMarkWithNumber: isMarkWithNumber)
+            menuItem.title = fileOnlyTitle
         }
 
         if !clip.thumbnailPath.isEmpty && !clip.isColorCode && isShowImage {
-            PINCache.shared.object(forKeyAsync: clip.thumbnailPath) { [weak menuItem] _, _, object in
+            let displayTitle: String
+            if primaryPboardType == .deprecatedTIFF {
+                displayTitle = title.isEmpty ? "(Image)" : title
+            } else if primaryPboardType == .deprecatedFilenames && title.isEmpty {
+                displayTitle = "(Filenames)"
+            } else {
+                displayTitle = title
+            }
+
+            PINCache.shared.object(forKeyAsync: clip.thumbnailPath) { [weak self, weak menuItem] _, _, object in
                 DispatchQueue.main.async {
-                    menuItem?.image = object as? NSImage
+                    guard let self, let menuItem, let image = object as? NSImage else { return }
+                    menuItem.image = nil
+                    menuItem.attributedTitle = self.imageMenuItemTitle(displayTitle,
+                                                                      listNumber: listNumber,
+                                                                      isMarkWithNumber: isMarkWithNumber,
+                                                                      image: image)
                 }
             }
         }
@@ -417,7 +466,7 @@ private extension MenuManager {
 
         let menuItem = NSMenuItem(title: titleWithMark, action: #selector(AppDelegate.selectSnippetMenuItem(_:)), keyEquivalent: "")
         menuItem.representedObject = snippet.identifier
-        menuItem.toolTip = snippet.content
+        menuItem.toolTip = nil
         menuItem.image = (isShowIcon) ? snippetIcon : nil
 
         return menuItem
@@ -444,7 +493,7 @@ private extension MenuManager {
         statusItem?.image = image
         statusItem?.highlightMode = true
         statusItem?.toolTip = "\(Constants.Application.name)\(Bundle.main.appVersion ?? "")"
-        statusItem?.menu = clipMenu
+        statusItem?.menu = statusMenu
     }
 
     func removeStatusItem() {
@@ -459,5 +508,154 @@ private extension MenuManager {
 private extension MenuManager {
     func firstIndexOfMenuItems() -> NSInteger {
         return AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.menuItemsTitleStartWithZero) ? 0 : 1
+    }
+
+    func estimatedMenuWidth(for menu: NSMenu) -> CGFloat {
+        let font = NSFont.menuFont(ofSize: 0)
+        let longestTitleWidth = menu.items
+            .map { item -> CGFloat in
+                guard !item.title.isEmpty else { return 0 }
+                return ceil((item.title as NSString).size(withAttributes: [.font: font]).width)
+            }
+            .max() ?? 0
+
+        return max(132, min(220, longestTitleWidth + 28))
+    }
+
+    func shouldShowPreview(for fullText: String, displayedTitle: String) -> Bool {
+        let normalized = fullText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty else { return false }
+
+        let trimmed = trimTitle(fullText)
+        return trimmed != normalized || displayedTitle.contains(shortenSymbol)
+    }
+}
+
+// MARK: - NSMenuDelegate
+extension MenuManager: NSMenuDelegate {
+    func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
+        let isHistoryCapableMenu = menu == historyMenu || menu == clipMenu
+        guard isHistoryCapableMenu else {
+            previewWindowController.hide()
+            return
+        }
+
+        let isShowToolTip = AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.showToolTipOnMenuItem)
+        guard isShowToolTip,
+              let item,
+              let fullText = clipPreviewTextByItem[ObjectIdentifier(item)] else {
+            previewWindowController.hide()
+            return
+        }
+
+        guard shouldShowPreview(for: fullText, displayedTitle: item.title) else {
+            previewWindowController.hide()
+            return
+        }
+
+        previewWindowController.show(text: fullText,
+                                     near: NSEvent.mouseLocation,
+                                     estimatedMenuWidth: estimatedMenuWidth(for: menu))
+    }
+
+    func menuDidClose(_ menu: NSMenu) {
+        previewWindowController.hide()
+    }
+}
+
+private final class MenuTooltipWindowController {
+    private let panel: NSPanel
+    private let textField: NSTextField
+    private let effectView: NSVisualEffectView
+    private let maxSize = NSSize(width: 360, height: 180)
+    private let minSize = NSSize(width: 240, height: 52)
+    private let contentInset = NSEdgeInsets(top: 10, left: 12, bottom: 10, right: 12)
+    private let horizontalGap: CGFloat = 2
+
+    init() {
+        panel = NSPanel(contentRect: NSRect(origin: .zero, size: minSize),
+                        styleMask: [.borderless, .nonactivatingPanel],
+                        backing: .buffered,
+                        defer: false)
+        panel.isFloatingPanel = true
+        panel.level = .popUpMenu
+        panel.hasShadow = true
+        panel.backgroundColor = .clear
+        panel.isOpaque = false
+        panel.hidesOnDeactivate = false
+        panel.ignoresMouseEvents = true
+        panel.collectionBehavior = [.canJoinAllSpaces, .transient, .ignoresCycle]
+
+        let contentView = NSView(frame: NSRect(origin: .zero, size: minSize))
+        contentView.wantsLayer = true
+        contentView.layer?.cornerRadius = 10
+        contentView.layer?.masksToBounds = true
+        contentView.layer?.borderWidth = 1
+        contentView.layer?.borderColor = NSColor.separatorColor.withAlphaComponent(0.25).cgColor
+
+        effectView = NSVisualEffectView(frame: contentView.bounds)
+        effectView.autoresizingMask = [.width, .height]
+        effectView.material = .menu
+        effectView.blendingMode = .behindWindow
+        effectView.state = .active
+
+        textField = NSTextField(wrappingLabelWithString: "")
+        textField.frame = NSRect(x: contentInset.left,
+                                 y: contentInset.bottom,
+                                 width: minSize.width - contentInset.left - contentInset.right,
+                                 height: minSize.height - contentInset.top - contentInset.bottom)
+        textField.font = NSFont.systemFont(ofSize: 12.5, weight: .regular)
+        textField.textColor = .labelColor
+        textField.maximumNumberOfLines = 0
+        textField.lineBreakMode = .byWordWrapping
+
+        contentView.addSubview(effectView)
+        contentView.addSubview(textField)
+        panel.contentView = contentView
+        panel.orderOut(nil)
+    }
+
+    func show(text: String, near point: NSPoint, estimatedMenuWidth: CGFloat) {
+        textField.stringValue = text
+        layoutWindow(for: text, near: point, estimatedMenuWidth: estimatedMenuWidth)
+        panel.orderFrontRegardless()
+    }
+
+    func hide() {
+        panel.orderOut(nil)
+    }
+
+    private func layoutWindow(for text: String, near point: NSPoint, estimatedMenuWidth: CGFloat) {
+        let maxTextSize = NSSize(width: maxSize.width - contentInset.left - contentInset.right,
+                                 height: .greatestFiniteMagnitude)
+        let measured = (text as NSString).boundingRect(
+            with: maxTextSize,
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [.font: textField.font as Any],
+            context: nil
+        ).integral
+
+        let width = min(max(measured.width + contentInset.left + contentInset.right, minSize.width), maxSize.width)
+        let height = min(max(measured.height + contentInset.top + contentInset.bottom, minSize.height), maxSize.height)
+
+        panel.setContentSize(NSSize(width: width, height: height))
+        panel.contentView?.frame = NSRect(origin: .zero, size: NSSize(width: width, height: height))
+        textField.frame = NSRect(x: contentInset.left,
+                                 y: contentInset.bottom,
+                                 width: width - contentInset.left - contentInset.right,
+                                 height: height - contentInset.top - contentInset.bottom)
+
+        let screen = NSScreen.screens.first { NSMouseInRect(point, $0.frame, false) } ?? NSScreen.main
+        let visibleFrame = screen?.visibleFrame ?? .zero
+
+        var origin = NSPoint(x: point.x + estimatedMenuWidth + horizontalGap,
+                             y: point.y - min(height * 0.55, 26))
+        if origin.x + width > visibleFrame.maxX {
+            origin.x = point.x - estimatedMenuWidth - width - horizontalGap
+        }
+        origin.x = max(visibleFrame.minX + 4, min(origin.x, visibleFrame.maxX - width - 4))
+        origin.y = max(visibleFrame.minY + 4, min(origin.y, visibleFrame.maxY - height - 4))
+
+        panel.setFrameOrigin(origin)
     }
 }

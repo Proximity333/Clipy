@@ -42,7 +42,7 @@ final class CPYPreferencesWindowController: NSWindowController {
     @IBOutlet private weak var updatesButton: NSButton!
     @IBOutlet private weak var betaButton: NSButton!
     // ViewController
-    private let viewController = [NSViewController(nibName: "CPYGeneralPreferenceViewController", bundle: nil),
+    private let viewController = [CPYGeneralPreferenceViewController(nibName: "CPYGeneralPreferenceViewController", bundle: nil),
                                   NSViewController(nibName: "CPYMenuPreferenceViewController", bundle: nil),
                                   CPYTypePreferenceViewController(nibName: "CPYTypePreferenceViewController", bundle: nil),
                                   CPYExcludeAppPreferenceViewController(nibName: "CPYExcludeAppPreferenceViewController", bundle: nil),
@@ -54,7 +54,7 @@ final class CPYPreferencesWindowController: NSWindowController {
     override func windowDidLoad() {
         super.windowDidLoad()
         self.window?.collectionBehavior = .canJoinAllSpaces
-        self.window?.backgroundColor = NSColor(white: 0.99, alpha: 1)
+        self.window?.backgroundColor = AppColors.windowBackground
         if #available(OSX 10.10, *) {
             self.window?.titlebarAppearsTransparent = true
         }
@@ -107,13 +107,13 @@ private extension CPYPreferencesWindowController {
         updatesImageView.image = Asset.prefUpdate.image
         betaImageView.image = Asset.prefBeta.image
 
-        generalTextField.textColor = ColorName.tabTitle.color
-        menuTextField.textColor = ColorName.tabTitle.color
-        typeTextField.textColor = ColorName.tabTitle.color
-        excludeTextField.textColor = ColorName.tabTitle.color
-        shortcutsTextField.textColor = ColorName.tabTitle.color
-        updatesTextField.textColor = ColorName.tabTitle.color
-        betaTextField.textColor = ColorName.tabTitle.color
+        generalTextField.textColor = AppColors.tabTitle
+        menuTextField.textColor = AppColors.tabTitle
+        typeTextField.textColor = AppColors.tabTitle
+        excludeTextField.textColor = AppColors.tabTitle
+        shortcutsTextField.textColor = AppColors.tabTitle
+        updatesTextField.textColor = AppColors.tabTitle
+        betaTextField.textColor = AppColors.tabTitle
     }
 
     func selectedTab(_ index: Int) {
@@ -122,25 +122,25 @@ private extension CPYPreferencesWindowController {
         switch index {
         case 0:
             generalImageView.image = Asset.prefGeneralOn.image
-            generalTextField.textColor = ColorName.clipy.color
+            generalTextField.textColor = AppColors.clipy
         case 1:
             menuImageView.image = Asset.prefMenuOn.image
-            menuTextField.textColor = ColorName.clipy.color
+            menuTextField.textColor = AppColors.clipy
         case 2:
             typeImageView.image = Asset.prefTypeOn.image
-            typeTextField.textColor = ColorName.clipy.color
+            typeTextField.textColor = AppColors.clipy
         case 3:
             excludeImageView.image = Asset.prefExcludedOn.image
-            excludeTextField.textColor = ColorName.clipy.color
+            excludeTextField.textColor = AppColors.clipy
         case 4:
             shortcutsImageView.image = Asset.prefShortcutOn.image
-            shortcutsTextField.textColor = ColorName.clipy.color
+            shortcutsTextField.textColor = AppColors.clipy
         case 5:
             updatesImageView.image = Asset.prefUpdateOn.image
-            updatesTextField.textColor = ColorName.clipy.color
+            updatesTextField.textColor = AppColors.clipy
         case 6:
             betaImageView.image = Asset.prefBetaOn.image
-            betaTextField.textColor = ColorName.clipy.color
+            betaTextField.textColor = AppColors.clipy
         default: break
         }
     }

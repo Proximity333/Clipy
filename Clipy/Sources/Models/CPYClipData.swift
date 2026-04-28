@@ -90,6 +90,8 @@ final class CPYClipData: NSObject {
                 .deprecatedPDF,
                 .deprecatedFilenames,
                 .deprecatedURL,
+                .png,
+                .tiff,
                 .deprecatedTIFF]
     }
     static var availableTypesString: [String] {
@@ -99,6 +101,8 @@ final class CPYClipData: NSObject {
                 "PDF",
                 "Filenames",
                 "URL",
+                "TIFF",
+                "TIFF",
                 "TIFF"]
     }
     static var availableTypesDictinary: [NSPasteboard.PasteboardType: String] {
@@ -128,7 +132,7 @@ final class CPYClipData: NSObject {
             case .deprecatedURL:
                 guard let urls = pasteboard.propertyList(forType: .deprecatedURL) as? [String] else { return }
                 URLs = urls
-            case .deprecatedTIFF:
+            case .png, .tiff, .deprecatedTIFF:
                 image = pasteboard.readObjects(forClasses: [NSImage.self], options: nil)?.first as? NSImage
             default: break
             }

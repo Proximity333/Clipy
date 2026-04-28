@@ -12,14 +12,20 @@ import Foundation
 internal enum L10n {
   /// Add
   internal static let add = L10n.tr("Localizable", "Add")
+  /// Appearance
+  internal static let appearance = L10n.tr("Localizable", "Appearance")
   /// Are you sure want to delete this item?
   internal static let areYouSureWantToDeleteThisItem = L10n.tr("Localizable", "Are you sure want to delete this item?")
   /// Are you sure you want to clear your clipboard history?
   internal static let areYouSureYouWantToClearYourClipboardHistory = L10n.tr("Localizable", "Are you sure you want to clear your clipboard history?")
+  /// Auto
+  internal static let auto = L10n.tr("Localizable", "Auto")
   /// Cancel
   internal static let cancel = L10n.tr("Localizable", "Cancel")
   /// Clear History
   internal static let clearHistory = L10n.tr("Localizable", "Clear History")
+  /// Dark
+  internal static let dark = L10n.tr("Localizable", "Dark")
   /// Delete Item
   internal static let deleteItem = L10n.tr("Localizable", "Delete Item")
   /// Don't Launch
@@ -34,6 +40,8 @@ internal enum L10n {
   internal static let launchClipyOnSystemStartup = L10n.tr("Localizable", "Launch Clipy on system startup?")
   /// Launch on system startup
   internal static let launchOnSystemStartup = L10n.tr("Localizable", "Launch on system startup")
+  /// Light
+  internal static let light = L10n.tr("Localizable", "Light")
   /// Menu
   internal static let menu = L10n.tr("Localizable", "Menu")
   /// Open System Preferences

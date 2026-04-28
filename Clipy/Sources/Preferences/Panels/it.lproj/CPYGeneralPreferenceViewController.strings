@@ -5,7 +5,7 @@
 /* Class = "NSTextFieldCell"; title = "Appearance"; ObjectID = "FM4-mw-DCx"; */
 "FM4-mw-DCx.title" = "Aspetto";
 
-/* Class = "NSTextFieldCell"; title = "Status Bar icon style:"; ObjectID = "Faj-kQ-G1v"; */
+/* Class = "NSTextFieldCell"; title = "Theme:"; ObjectID = "Faj-kQ-G1v"; */
 "Faj-kQ-G1v.title" = "Stile dell'icona nella barra dei menu:";
 
 /* Class = "NSTextFieldCell"; title = "Sort history order by:"; ObjectID = "Lps-06-dPB"; */
@@ -37,3 +37,6 @@
 
 /* Class = "NSTextFieldCell"; title = "Behavior"; ObjectID = "nDk-8y-89n"; */
 "nDk-8y-89n.title" = "Impostazioni essenziali";
+
+/* Class = "NSTextFieldCell"; title = "Status Bar icon:"; ObjectID = "SBz-Sts-Cell"; */
+"SBz-Sts-Cell.title" = "";

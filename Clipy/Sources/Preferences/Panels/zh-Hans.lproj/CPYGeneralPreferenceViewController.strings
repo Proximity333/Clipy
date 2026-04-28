@@ -5,8 +5,8 @@
 /* Class = "NSTextFieldCell"; title = "Appearance"; ObjectID = "FM4-mw-DCx"; */
 "FM4-mw-DCx.title" = "外观";
 
-/* Class = "NSTextFieldCell"; title = "Status Bar icon style:"; ObjectID = "Faj-kQ-G1v"; */
-"Faj-kQ-G1v.title" = "状态栏图标样式：";
+/* Class = "NSTextFieldCell"; title = "Theme:"; ObjectID = "Faj-kQ-G1v"; */
+"Faj-kQ-G1v.title" = "主题：";
 
 /* Class = "NSTextFieldCell"; title = "Sort history order by:"; ObjectID = "Lps-06-dPB"; */
 "Lps-06-dPB.title" = "历史排序按照：";
@@ -37,3 +37,6 @@
 
 /* Class = "NSTextFieldCell"; title = "Behavior"; ObjectID = "nDk-8y-89n"; */
 "nDk-8y-89n.title" = "行为";
+
+/* Class = "NSTextFieldCell"; title = "Status Bar icon:"; ObjectID = "SBz-Sts-Cell"; */
+"SBz-Sts-Cell.title" = "状态栏图标：";

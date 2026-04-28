@@ -43,6 +43,7 @@ struct AppEnvironment {
                      excludeAppService: ExcludeAppService = current.excludeAppService,
                      accessibilityService: AccessibilityService = current.accessibilityService,
                      menuManager: MenuManager = current.menuManager,
+                     themeService: ThemeService = current.themeService,
                      defaults: UserDefaults = current.defaults) {
         push(environment: Environment(clipService: clipService,
                                       hotKeyService: hotKeyService,
@@ -51,6 +52,7 @@ struct AppEnvironment {
                                       excludeAppService: excludeAppService,
                                       accessibilityService: accessibilityService,
                                       menuManager: menuManager,
+                                      themeService: themeService,
                                       defaults: defaults))
     }
 
@@ -61,6 +63,7 @@ struct AppEnvironment {
                                excludeAppService: ExcludeAppService = current.excludeAppService,
                                accessibilityService: AccessibilityService = current.accessibilityService,
                                menuManager: MenuManager = current.menuManager,
+                               themeService: ThemeService = current.themeService,
                                defaults: UserDefaults = current.defaults) {
         replaceCurrent(environment: Environment(clipService: clipService,
                                                 hotKeyService: hotKeyService,
@@ -69,6 +72,7 @@ struct AppEnvironment {
                                                 excludeAppService: excludeAppService,
                                                 accessibilityService: accessibilityService,
                                                 menuManager: menuManager,
+                                                themeService: themeService,
                                                 defaults: defaults))
     }
 
@@ -85,6 +89,7 @@ struct AppEnvironment {
                            excludeAppService: excludeAppService,
                            accessibilityService: current.accessibilityService,
                            menuManager: current.menuManager,
+                           themeService: current.themeService,
                            defaults: current.defaults)
     }
 

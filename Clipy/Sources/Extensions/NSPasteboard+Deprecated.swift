@@ -47,4 +47,12 @@ extension NSPasteboard.PasteboardType {
         return NSPasteboard.PasteboardType(rawValue: "NSTIFFPboardType")
     }
 
+    static var png: NSPasteboard.PasteboardType {
+        return NSPasteboard.PasteboardType(rawValue: "public.png")
+    }
+
+    static var tiff: NSPasteboard.PasteboardType {
+        return NSPasteboard.PasteboardType(rawValue: "public.tiff")
+    }
+
 }

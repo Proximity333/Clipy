@@ -57,6 +57,9 @@ final class CPYUtilities {
         defaultValues.updateValue(NSNumber(value: true), forKey: Constants.UserDefaults.copySameHistory)
         defaultValues.updateValue(NSNumber(value: true), forKey: Constants.UserDefaults.showColorPreviewInTheMenu)
 
+        /* Appearance */
+        defaultValues.updateValue(NSNumber(value: 0), forKey: Constants.UserDefaults.appearance)
+
         /* Updates */
         defaultValues.updateValue(NSNumber(value: true), forKey: Constants.Update.enableAutomaticCheck)
         defaultValues.updateValue(NSNumber(value: 86400), forKey: Constants.Update.checkInterval)
