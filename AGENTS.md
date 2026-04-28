@@ -10,6 +10,14 @@
 - Focused test runs should use Xcode's workspace/scheme form, for example: `xcodebuild test -workspace Clipy.xcworkspace -scheme Clipy -only-testing:ClipyTests/HotKeyServiceSpec`.
 - Danger lint uses the vendored binary: `./Pods/SwiftLint/swiftlint lint --config .swiftlint.yml`.
 
+## Release Process
+
+- Create a new git tag for the release version before packaging, for example `git tag v2.0.1`.
+- Build the release app with `xcodebuild -workspace Clipy.xcworkspace -scheme Clipy -configuration Release -derivedDataPath build/DerivedData ENABLE_TESTABILITY=YES build`, then package `build/DerivedData/Build/Products/Release/Clipy.app`.
+- Commit the source changes and push both the branch and the tag to `origin`.
+- Use `gh release create` to publish the GitHub release and upload the packaged artifact.
+- After publishing, clean local outputs with `rm -rf dist build` and remove Xcode build outputs for this project with `rm -rf ~/Library/Developer/Xcode/DerivedData/Clipy-*` when needed.
+
 ## Generated And Scripted Files
 
 - Do not hand-edit `Clipy/Generated/AssetsImages.swift`, `Clipy/Generated/Colors.swift`, or `Clipy/Generated/LocalizedStrings.swift`; they are generated from `swiftgen.yml`.
