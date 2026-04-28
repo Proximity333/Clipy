@@ -64,7 +64,10 @@ extension PasteService {
         let isPasteAndDeleteHistory = self.isPasteAndDeleteHistory
         let isDeleteHistory = self.isDeleteHistory
         guard isPastePlainText || isPasteAndDeleteHistory || isDeleteHistory else {
+            AppEnvironment.current.clipService.incrementChangeCount()
             copyToPasteboard(with: clip)
+            AppEnvironment.current.clipService.syncChangeCountToPasteboard()
+            AppEnvironment.current.clipService.markAsRecentlyUsed(clip)
             paste()
             return
         }
@@ -75,10 +78,15 @@ extension PasteService {
         }
         // Paste history
         if isPastePlainText {
+            AppEnvironment.current.clipService.incrementChangeCount()
             copyToPasteboard(with: data.stringValue)
+            AppEnvironment.current.clipService.syncChangeCountToPasteboard()
             paste()
         } else if isPasteAndDeleteHistory {
+            AppEnvironment.current.clipService.incrementChangeCount()
             copyToPasteboard(with: clip)
+            AppEnvironment.current.clipService.syncChangeCountToPasteboard()
+            AppEnvironment.current.clipService.markAsRecentlyUsed(clip)
             paste()
         }
         // Delete clip
@@ -128,9 +136,12 @@ extension PasteService {
             case .deprecatedURL:
                 let url = data.URLs
                 pasteboard.setPropertyList(url, forType: .deprecatedURL)
-            case .deprecatedTIFF:
+            case .png:
+                guard let image = data.image, let imageData = image.pngData else { return }
+                pasteboard.setData(imageData, forType: .png)
+            case .tiff, .deprecatedTIFF:
                 guard let image = data.image, let imageData = image.tiffRepresentation else { return }
-                pasteboard.setData(imageData, forType: .deprecatedTIFF)
+                pasteboard.setData(imageData, forType: type)
             default: break
             }
         }

@@ -223,19 +223,28 @@ private extension MenuManager {
 
     func imageMenuItemTitle(_ title: String, listNumber: NSInteger, isMarkWithNumber: Bool, image: NSImage?) -> NSAttributedString {
         let prefix = (isMarkWithNumber) ? "\(listNumber). " : ""
-        let attributed = NSMutableAttributedString(string: prefix,
-                                                   attributes: [.font: NSFont.menuFont(ofSize: 0)])
+        let font = NSFont.menuFont(ofSize: 0)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.minimumLineHeight = max(font.capHeight, image?.size.height ?? 0)
+        paragraphStyle.maximumLineHeight = paragraphStyle.minimumLineHeight
+
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .paragraphStyle: paragraphStyle,
+            .baselineOffset: 1
+        ]
+        let attributed = NSMutableAttributedString(string: prefix, attributes: attributes)
 
         if let image {
             let attachment = NSTextAttachment()
             attachment.image = image
-            attachment.bounds = NSRect(x: 0, y: -2, width: image.size.width, height: image.size.height)
+            let yOffset = (font.capHeight - image.size.height) / 2
+            attachment.bounds = NSRect(x: 0, y: yOffset, width: image.size.width, height: image.size.height)
             attributed.append(NSAttributedString(attachment: attachment))
-            attributed.append(NSAttributedString(string: " "))
+            attributed.append(NSAttributedString(string: " ", attributes: attributes))
         }
 
-        attributed.append(NSAttributedString(string: title,
-                                             attributes: [.font: NSFont.menuFont(ofSize: 0)]))
+        attributed.append(NSAttributedString(string: title, attributes: attributes))
         return attributed
     }
 

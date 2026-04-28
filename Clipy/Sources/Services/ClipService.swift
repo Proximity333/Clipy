@@ -80,6 +80,21 @@ final class ClipService {
         cachedChangeCount.accept(cachedChangeCount.value + 1)
     }
 
+    func syncChangeCountToPasteboard() {
+        cachedChangeCount.accept(NSPasteboard.general.changeCount)
+    }
+
+    func markAsRecentlyUsed(_ clip: CPYClip) {
+        guard AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.reorderClipsAfterPasting) else { return }
+
+        let realm = try! Realm()
+        guard let savedClip = realm.object(ofType: CPYClip.self, forPrimaryKey: clip.dataHash), !savedClip.isInvalidated else { return }
+
+        realm.transaction {
+            savedClip.updateTime = Int(Date().timeIntervalSince1970 * 1000)
+        }
+    }
+
 }
 
 // MARK: - Create Clip
@@ -113,6 +128,8 @@ extension ClipService {
     }
 
     fileprivate func save(with data: CPYClipData) {
+        if !data.hasMeaningfulContent { return }
+
         let realm = try! Realm()
         // Copy already copied history
         let isCopySameHistory = AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.copySameHistory)
@@ -128,12 +145,12 @@ extension ClipService {
         let savedHash = (isOverwriteHistory) ? data.hash : Int(arc4random() % 1000000)
 
         // Saved time and path
-        let unixTime = Int(Date().timeIntervalSince1970)
+        let unixTime = Int(Date().timeIntervalSince1970 * 1000)
         let savedPath = CPYUtilities.applicationSupportFolder() + "/\(NSUUID().uuidString).data"
         // Create Realm object
         let clip = CPYClip()
         clip.dataPath = savedPath
-        clip.title = data.stringValue[0...10000]
+        clip.title = data.titleText[0...10000]
         clip.dataHash = "\(savedHash)"
         clip.updateTime = unixTime
         clip.primaryType = data.primaryType?.rawValue ?? ""

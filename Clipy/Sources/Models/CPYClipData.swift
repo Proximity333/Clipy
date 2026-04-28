@@ -59,6 +59,33 @@ final class CPYClipData: NSObject {
     var isOnlyStringType: Bool {
         return types == [.deprecatedString]
     }
+    var hasMeaningfulContent: Bool {
+        if !stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
+        if RTFData != nil || PDF != nil || image != nil { return true }
+        if !fileNames.isEmpty || !URLs.isEmpty { return true }
+        return false
+    }
+    var titleText: String {
+        let trimmedString = stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedString.isEmpty {
+            return trimmedString
+        }
+        if let fileName = fileNames.first {
+            let path = NSString(string: fileName).expandingTildeInPath
+            let displayName = FileManager.default.displayName(atPath: path)
+            if !displayName.isEmpty {
+                return displayName
+            }
+            return URL(fileURLWithPath: path).lastPathComponent
+        }
+        if let urlString = URLs.first {
+            return urlString
+        }
+        if PDF != nil {
+            return "(PDF)"
+        }
+        return ""
+    }
     var thumbnailImage: NSImage? {
         let defaults = UserDefaults.standard
         let width = defaults.integer(forKey: Constants.UserDefaults.thumbnailWidth)
