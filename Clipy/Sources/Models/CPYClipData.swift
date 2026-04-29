@@ -35,7 +35,9 @@ final class CPYClipData: NSObject {
     override var hash: Int {
         var hash = types.map { $0.rawValue }.joined().hash
         if let image = self.image, let imageData = image.tiffRepresentation {
-            hash ^= imageData.count
+            hash ^= CPYClipData.hashData(imageData)
+        } else if let image = self.image, let pngData = image.pngData {
+            hash ^= CPYClipData.hashData(pngData)
         } else if let image = self.image {
             hash ^= image.hash
         }
@@ -108,6 +110,15 @@ final class CPYClipData: NSObject {
     var colorCodeImage: NSImage? {
         guard let color = NSColor(hexString: stringValue) else { return nil }
         return NSImage.create(with: color, size: NSSize(width: 20, height: 20))
+    }
+
+    private static func hashData(_ data: Data) -> Int {
+        var result = data.count
+        let step = max(1, data.count / 256)
+        for i in Swift.stride(from: 0, to: data.count, by: step) {
+            result = result &* 31 &+ Int(data[i])
+        }
+        return result
     }
 
     static var availableTypes: [NSPasteboard.PasteboardType] {

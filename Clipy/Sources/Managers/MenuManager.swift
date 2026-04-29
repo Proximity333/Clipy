@@ -404,14 +404,29 @@ private extension MenuManager {
                 displayTitle = title
             }
 
-            PINCache.shared.object(forKeyAsync: clip.thumbnailPath) { [weak self, weak menuItem] _, _, object in
+            let cachedThumbnailPath = clip.thumbnailPath
+            let cachedDataPath = clip.dataPath
+            PINCache.shared.object(forKeyAsync: cachedThumbnailPath) { [weak self, weak menuItem] _, _, object in
                 DispatchQueue.main.async {
-                    guard let self, let menuItem, let image = object as? NSImage else { return }
-                    menuItem.image = nil
-                    menuItem.attributedTitle = self.imageMenuItemTitle(displayTitle,
-                                                                      listNumber: listNumber,
-                                                                      isMarkWithNumber: isMarkWithNumber,
-                                                                      image: image)
+                    guard let self, let menuItem else { return }
+                    if let image = object as? NSImage {
+                        menuItem.image = nil
+                        menuItem.attributedTitle = self.imageMenuItemTitle(displayTitle,
+                                                                           listNumber: listNumber,
+                                                                           isMarkWithNumber: isMarkWithNumber,
+                                                                           image: image)
+                    } else if !cachedDataPath.isEmpty {
+                        // Fallback: regenerate thumbnail from .data file
+                        if let data = NSKeyedUnarchiver.unarchiveObject(withFile: cachedDataPath) as? CPYClipData,
+                           let thumbnail = data.thumbnailImage {
+                            PINCache.shared.setObject(thumbnail, forKey: cachedThumbnailPath)
+                            menuItem.image = nil
+                            menuItem.attributedTitle = self.imageMenuItemTitle(displayTitle,
+                                                                               listNumber: listNumber,
+                                                                               isMarkWithNumber: isMarkWithNumber,
+                                                                               image: thumbnail)
+                        }
+                    }
                 }
             }
         }

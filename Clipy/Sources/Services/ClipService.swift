@@ -156,13 +156,13 @@ extension ClipService {
         clip.primaryType = data.primaryType?.rawValue ?? ""
 
         DispatchQueue.main.async {
-            // Save thumbnail image
+            // Save thumbnail image (synchronous write to ensure persistence before Realm commit)
             if let thumbnailImage = data.thumbnailImage {
-                PINCache.shared.setObjectAsync(thumbnailImage, forKey: "\(unixTime)", completion: nil)
+                PINCache.shared.setObject(thumbnailImage, forKey: "\(unixTime)")
                 clip.thumbnailPath = "\(unixTime)"
             }
             if let colorCodeImage = data.colorCodeImage {
-                PINCache.shared.setObjectAsync(colorCodeImage, forKey: "\(unixTime)", completion: nil)
+                PINCache.shared.setObject(colorCodeImage, forKey: "\(unixTime)")
                 clip.thumbnailPath = "\(unixTime)"
                 clip.isColorCode = true
             }
