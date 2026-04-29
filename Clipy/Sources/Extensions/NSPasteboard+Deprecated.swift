@@ -23,6 +23,18 @@ extension NSPasteboard.PasteboardType {
         return NSPasteboard.PasteboardType(rawValue: "NSStringPboardType")
     }
 
+    static var publicText: NSPasteboard.PasteboardType {
+        return NSPasteboard.PasteboardType(rawValue: "public.text")
+    }
+
+    static var utf8PlainText: NSPasteboard.PasteboardType {
+        return NSPasteboard.PasteboardType(rawValue: "public.utf8-plain-text")
+    }
+
+    static var utf16PlainText: NSPasteboard.PasteboardType {
+        return NSPasteboard.PasteboardType(rawValue: "public.utf16-external-plain-text")
+    }
+
     static var deprecatedRTF: NSPasteboard.PasteboardType {
         return NSPasteboard.PasteboardType(rawValue: "NSRTFPboardType")
     }

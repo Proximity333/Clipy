@@ -30,13 +30,15 @@ final class ClipService {
     func startMonitoring() {
         disposeBag = DisposeBag()
         // Pasteboard observe timer
-        Observable<Int>.interval(.microseconds(750), scheduler: scheduler)
+        Observable<Int>.interval(.milliseconds(200), scheduler: scheduler)
             .map { _ in NSPasteboard.general.changeCount }
             .withLatestFrom(cachedChangeCount.asObservable()) { ($0, $1) }
             .filter { $0 != $1 }
             .subscribe(onNext: { [weak self] changeCount, _ in
-                self?.cachedChangeCount.accept(changeCount)
-                self?.create()
+                guard let self else { return }
+                if self.create() {
+                    self.cachedChangeCount.accept(changeCount)
+                }
             })
             .disposed(by: disposeBag)
         // Store types
@@ -99,24 +101,24 @@ final class ClipService {
 
 // MARK: - Create Clip
 extension ClipService {
-    fileprivate func create() {
+    fileprivate func create() -> Bool {
         lock.lock(); defer { lock.unlock() }
 
         // Store types
-        if !storeTypes.values.contains(NSNumber(value: true)) { return }
+        if !storeTypes.values.contains(NSNumber(value: true)) { return true }
         // Pasteboard types
         let pasteboard = NSPasteboard.general
         let types = self.types(with: pasteboard)
-        if types.isEmpty { return }
+        if types.isEmpty { return false }
 
         // Excluded application
-        guard !AppEnvironment.current.excludeAppService.frontProcessIsExcludedApplication() else { return }
+        guard !AppEnvironment.current.excludeAppService.frontProcessIsExcludedApplication() else { return true }
         // Special applications
-        guard !AppEnvironment.current.excludeAppService.copiedProcessIsExcludedApplications(pasteboard: pasteboard) else { return }
+        guard !AppEnvironment.current.excludeAppService.copiedProcessIsExcludedApplications(pasteboard: pasteboard) else { return true }
 
         // Create data
         let data = CPYClipData(pasteboard: pasteboard, types: types)
-        save(with: data)
+        return save(with: data)
     }
 
     func create(with image: NSImage) {
@@ -124,21 +126,21 @@ extension ClipService {
 
         // Create only image data
         let data = CPYClipData(image: image)
-        save(with: data)
+        _ = save(with: data)
     }
 
-    fileprivate func save(with data: CPYClipData) {
-        if !data.hasMeaningfulContent { return }
+    fileprivate func save(with data: CPYClipData) -> Bool {
+        if !data.hasMeaningfulContent { return false }
 
         let realm = try! Realm()
         // Copy already copied history
         let isCopySameHistory = AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.copySameHistory)
-        if realm.object(ofType: CPYClip.self, forPrimaryKey: "\(data.hash)") != nil, !isCopySameHistory { return }
+        if realm.object(ofType: CPYClip.self, forPrimaryKey: "\(data.hash)") != nil, !isCopySameHistory { return true }
         // Don't save invalidated clip
-        if let clip = realm.object(ofType: CPYClip.self, forPrimaryKey: "\(data.hash)"), clip.isInvalidated { return }
+        if let clip = realm.object(ofType: CPYClip.self, forPrimaryKey: "\(data.hash)"), clip.isInvalidated { return true }
 
         // Don't save empty string history
-        if data.isOnlyStringType && data.stringValue.isEmpty { return }
+        if data.isOnlyStringType && data.stringValue.isEmpty { return false }
 
         // Overwrite same history
         let isOverwriteHistory = AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.overwriteSameHistory)
@@ -155,27 +157,25 @@ extension ClipService {
         clip.updateTime = unixTime
         clip.primaryType = data.primaryType?.rawValue ?? ""
 
-        DispatchQueue.main.async {
-            // Save thumbnail image (synchronous write to ensure persistence before Realm commit)
-            if let thumbnailImage = data.thumbnailImage {
-                PINCache.shared.setObject(thumbnailImage, forKey: "\(unixTime)")
-                clip.thumbnailPath = "\(unixTime)"
-            }
-            if let colorCodeImage = data.colorCodeImage {
-                PINCache.shared.setObject(colorCodeImage, forKey: "\(unixTime)")
-                clip.thumbnailPath = "\(unixTime)"
-                clip.isColorCode = true
-            }
-            // Save Realm and .data file
-            let dispatchRealm = try! Realm()
-            if CPYUtilities.prepareSaveToPath(CPYUtilities.applicationSupportFolder()) {
-                if NSKeyedArchiver.archiveRootObject(data, toFile: savedPath) {
-                    dispatchRealm.transaction {
-                        dispatchRealm.add(clip, update: .all)
-                    }
-                }
+        // Save thumbnail image before Realm commit so menu refresh sees a complete record.
+        if let thumbnailImage = data.thumbnailImage {
+            PINCache.shared.setObject(thumbnailImage, forKey: "\(unixTime)")
+            clip.thumbnailPath = "\(unixTime)"
+        }
+        if let colorCodeImage = data.colorCodeImage {
+            PINCache.shared.setObject(colorCodeImage, forKey: "\(unixTime)")
+            clip.thumbnailPath = "\(unixTime)"
+            clip.isColorCode = true
+        }
+
+        if CPYUtilities.prepareSaveToPath(CPYUtilities.applicationSupportFolder()) &&
+            NSKeyedArchiver.archiveRootObject(data, toFile: savedPath) {
+            realm.transaction {
+                realm.add(clip, update: .all)
             }
         }
+
+        return true
     }
 
     private func types(with pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {

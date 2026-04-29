@@ -263,6 +263,7 @@ private extension MenuManager {
 
     func makeSubmenuItem(_ title: String) -> NSMenuItem {
         let subMenu = NSMenu(title: "")
+        subMenu.delegate = self
         let subMenuItem = NSMenuItem(title: title, action: nil)
         subMenuItem.submenu = subMenu
         subMenuItem.image = (AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.showIconInTheMenu)) ? folderIcon : nil
@@ -553,13 +554,23 @@ private extension MenuManager {
         let trimmed = trimTitle(fullText)
         return trimmed != normalized || displayedTitle.contains(shortenSymbol)
     }
+
+    func isHistoryMenu(_ menu: NSMenu?) -> Bool {
+        var currentMenu = menu
+        while let menu = currentMenu {
+            if menu == historyMenu || menu == clipMenu {
+                return true
+            }
+            currentMenu = menu.supermenu
+        }
+        return false
+    }
 }
 
 // MARK: - NSMenuDelegate
 extension MenuManager: NSMenuDelegate {
     func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
-        let isHistoryCapableMenu = menu == historyMenu || menu == clipMenu
-        guard isHistoryCapableMenu else {
+        guard isHistoryMenu(menu) else {
             previewWindowController.hide()
             return
         }

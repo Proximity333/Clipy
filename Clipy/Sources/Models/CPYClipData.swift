@@ -33,7 +33,9 @@ final class CPYClipData: NSObject {
     var image: NSImage?
 
     override var hash: Int {
-        var hash = types.map { $0.rawValue }.joined().hash
+        // Pasteboard type order is not stable for some system file copy flows.
+        // Hash against a normalized type set so repeated copies of the same item dedupe reliably.
+        var hash = types.map { $0.rawValue }.sorted().joined(separator: "|").hash
         if let image = self.image, let imageData = image.tiffRepresentation {
             hash ^= CPYClipData.hashData(imageData)
         } else if let image = self.image, let pngData = image.pngData {
@@ -123,6 +125,10 @@ final class CPYClipData: NSObject {
 
     static var availableTypes: [NSPasteboard.PasteboardType] {
         return [.deprecatedString,
+                .string,
+                .publicText,
+                .utf8PlainText,
+                .utf16PlainText,
                 .deprecatedRTF,
                 .deprecatedRTFD,
                 .deprecatedPDF,
@@ -134,6 +140,10 @@ final class CPYClipData: NSObject {
     }
     static var availableTypesString: [String] {
         return ["String",
+                "String",
+                "String",
+                "String",
+                "String",
                 "RTF",
                 "RTFD",
                 "PDF",
@@ -155,8 +165,10 @@ final class CPYClipData: NSObject {
         self.types = types
         types.forEach { type in
             switch type {
-            case .deprecatedString:
-                guard let string = pasteboard.string(forType: .deprecatedString) else { return }
+            case .deprecatedString, .string, .publicText, .utf8PlainText, .utf16PlainText:
+                guard let string = pasteboard.string(forType: type) ??
+                        pasteboard.string(forType: .string) ??
+                        pasteboard.string(forType: .deprecatedString) else { return }
                 stringValue = string
             case .deprecatedRTFD:
                 RTFData = pasteboard.data(forType: .deprecatedRTFD)
