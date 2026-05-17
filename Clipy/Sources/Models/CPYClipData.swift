@@ -91,19 +91,18 @@ final class CPYClipData: NSObject {
         return ""
     }
     var thumbnailImage: NSImage? {
-        let defaults = UserDefaults.standard
-        let width = defaults.integer(forKey: Constants.UserDefaults.thumbnailWidth)
-        let height = defaults.integer(forKey: Constants.UserDefaults.thumbnailHeight)
+        let width: CGFloat = 100
+        let height: CGFloat = 32
 
         if let image = image, fileNames.isEmpty {
             // Image only data
-            return image.resizeImage(CGFloat(width), CGFloat(height))
+            return image.resizeImage(width, height)
         } else if let fileName = fileNames.first, let path = fileName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed), let url = URL(string: path) {
              // In the case of the local file correct data is not included in the image variable
              // Judge the image from the path and create a thumbnail
             switch url.pathExtension.lowercased() {
             case "jpg", "jpeg", "png", "bmp", "tiff":
-                return NSImage(contentsOfFile: fileName)?.resizeImage(CGFloat(width), CGFloat(height))
+                return NSImage(contentsOfFile: fileName)?.resizeImage(width, height)
             default: break
             }
         }

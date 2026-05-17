@@ -167,6 +167,10 @@ class AppDelegate: NSObject, NSMenuItemValidation {
 // MARK: - NSApplication Delegate
 extension AppDelegate: NSApplicationDelegate {
 
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
+    }
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Environments
         AppEnvironment.replaceCurrent(environment: AppEnvironment.fromStorage())

@@ -8,9 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		242EC2327861D35B7C3AE84E /* Pods_ClipyTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00A4B450122D7FCE6BD57E77 /* Pods_ClipyTests.framework */; };
+		26F49E00CBA8EB8B4DB136A0 /* SearchTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C755B8B6D0F9A14523866B5 /* SearchTextField.swift */; };
 		4AC2AA29EF2BAE48201EDE6D /* AppColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78FB8F2F75F0C9B50D2B8689 /* AppColors.swift */; };
 		6E28861E792AA7F7A928DC48 /* CPYGeneralPreferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92E0DC52351AB2C0724C9825 /* CPYGeneralPreferenceViewController.swift */; };
+		8572653B1F07748D4F540F1B /* SearchFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11735872FA43D5D5A13D2FE5 /* SearchFieldView.swift */; };
 		942B9A5FCF26A4BEBDFAB404 /* ThemeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF7D6163FCA0BF4EB22D62C0 /* ThemeService.swift */; };
+		B6B867FC5DD1A0F733672C84 /* SearchPopoverController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025C995DA040276D94900E9E /* SearchPopoverController.swift */; };
 		B7CC520B88EAA6AD38E93462 /* Pods_Clipy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73A92F6DEE6CFF50A567CFEF /* Pods_Clipy.framework */; };
 		C5F1B7331FF74A2D00D2DA83 /* NSPasteboard+Deprecated.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5F1B7321FF74A2D00D2DA83 /* NSPasteboard+Deprecated.swift */; };
 		FA08EDF81D1FED7D000D1D13 /* HotKeyServiceSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA08EDF71D1FED7D000D1D13 /* HotKeyServiceSpec.swift */; };
@@ -110,6 +113,8 @@
 
 /* Begin PBXFileReference section */
 		00A4B450122D7FCE6BD57E77 /* Pods_ClipyTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ClipyTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		025C995DA040276D94900E9E /* SearchPopoverController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchPopoverController.swift; sourceTree = "<group>"; };
+		11735872FA43D5D5A13D2FE5 /* SearchFieldView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchFieldView.swift; sourceTree = "<group>"; };
 		1C2D23FF23B07B76585DC610 /* Pods-ClipyTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ClipyTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ClipyTests/Pods-ClipyTests.release.xcconfig"; sourceTree = "<group>"; };
 		31064F137CFB046737D1709D /* Pods-Clipy.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Clipy.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Clipy/Pods-Clipy.debug.xcconfig"; sourceTree = "<group>"; };
 		314B299D1EC49AD5004DD070 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/CPYSnippetsEditorWindowController.xib; sourceTree = "<group>"; };
@@ -138,6 +143,7 @@
 		54ADE1032008F64100239852 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		73A92F6DEE6CFF50A567CFEF /* Pods_Clipy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Clipy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		78FB8F2F75F0C9B50D2B8689 /* AppColors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppColors.swift; sourceTree = "<group>"; };
+		7C755B8B6D0F9A14523866B5 /* SearchTextField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchTextField.swift; sourceTree = "<group>"; };
 		846004961FD5511800BA733E /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/CPYPreferencesWindowController.strings; sourceTree = "<group>"; };
 		846004971FD5511900BA733E /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/CPYBetaPreferenceViewController.strings; sourceTree = "<group>"; };
 		846004981FD5511900BA733E /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/CPYExcludeAppPreferenceViewController.strings; sourceTree = "<group>"; };
@@ -419,6 +425,9 @@
 				FA1DB4DF1DDCB49C007F95C8 /* SplitViews */,
 				FA1DB4E11DDCB49C007F95C8 /* TableViewCell */,
 				FA1DB4E31DDCB49C007F95C8 /* TextViews */,
+				7C755B8B6D0F9A14523866B5 /* SearchTextField.swift */,
+				11735872FA43D5D5A13D2FE5 /* SearchFieldView.swift */,
+				025C995DA040276D94900E9E /* SearchPopoverController.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -898,6 +907,9 @@
 				942B9A5FCF26A4BEBDFAB404 /* ThemeService.swift in Sources */,
 				4AC2AA29EF2BAE48201EDE6D /* AppColors.swift in Sources */,
 				6E28861E792AA7F7A928DC48 /* CPYGeneralPreferenceViewController.swift in Sources */,
+				26F49E00CBA8EB8B4DB136A0 /* SearchTextField.swift in Sources */,
+				8572653B1F07748D4F540F1B /* SearchFieldView.swift in Sources */,
+				B6B867FC5DD1A0F733672C84 /* SearchPopoverController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

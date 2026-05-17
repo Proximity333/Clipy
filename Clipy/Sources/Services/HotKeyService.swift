@@ -37,7 +37,8 @@ final class HotKeyService: NSObject {
 // MARK: - Actions
 extension HotKeyService {
     @objc func popupMainMenu() {
-        AppEnvironment.current.menuManager.popUpMenu(.main)
+        let menuManager = AppEnvironment.current.menuManager
+        menuManager.toggleSearchPopoverAtMouseLocation()
     }
 
     @objc func popupHistoryMenu() {
@@ -46,6 +47,13 @@ extension HotKeyService {
 
     @objc func popUpSnippetMenu() {
         AppEnvironment.current.menuManager.popUpMenu(.snippet)
+    }
+
+    @objc func showSearchPopover() {
+        let menuManager = AppEnvironment.current.menuManager
+        let rect = NSRect(x: NSEvent.mouseLocation.x, y: NSEvent.mouseLocation.y, width: 0, height: 0)
+        let view = NSApp.mainWindow?.contentView ?? NSView()
+        menuManager.showSearchPopover(relativeTo: rect, of: view)
     }
 
     @objc func popUpClearHistoryAlert() {
