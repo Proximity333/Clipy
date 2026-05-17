@@ -8,9 +8,6 @@
 /* Class = "NSButtonCell"; title = "Place already copied history at the top"; ObjectID = "a32-zW-R74"; */
 "a32-zW-R74.title" = "把已经粘贴的历史置顶";
 
-/* Class = "NSButtonCell"; title = "Add key equivalents to numeric keys"; ObjectID = "hE2-DL-MKl"; */
-"hE2-DL-MKl.title" = "添加等效于数字键的按键";
-
 /* Class = "NSButtonCell"; title = "Show color code preview"; ObjectID = "hgW-RK-5oy"; */
 "hgW-RK-5oy.title" = "为颜色代码显示预览";
 

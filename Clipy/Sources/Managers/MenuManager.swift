@@ -206,8 +206,6 @@ private extension MenuManager {
                                         .compactMap { $0 }.distinctUntilChanged().map { _ in })
         menuChangedObservables.append(defaults.rx.observe(Bool.self, Constants.UserDefaults.showImageInTheMenu, options: [.new], retainSelf: false)
                                         .compactMap { $0 }.distinctUntilChanged().map { _ in })
-        menuChangedObservables.append(defaults.rx.observe(Bool.self, Constants.UserDefaults.addNumericKeyEquivalents, options: [.new], retainSelf: false)
-                                        .compactMap { $0 }.distinctUntilChanged().map { _ in })
         menuChangedObservables.append(defaults.rx.observe(Bool.self, Constants.UserDefaults.showColorPreviewInTheMenu, options: [.new], retainSelf: false)
                                         .compactMap { $0 }.distinctUntilChanged().map { _ in })
         Observable.merge(menuChangedObservables)
@@ -249,7 +247,6 @@ private extension MenuManager {
         addHistoryItems(historyMenu!, clips: isSearching ? filteredClips : allClips)
 
         addSnippetItems(clipMenu!, separateMenu: true)
-        addSnippetItems(statusMenu!, separateMenu: false)
         addSnippetItems(snippetMenu!, separateMenu: false)
 
         clipMenu?.addItem(NSMenuItem.separator())
@@ -370,17 +367,6 @@ private extension MenuManager {
     func makeClipMenuItem(_ clip: CPYClip, index: Int) -> NSMenuItem {
         let isShowImage = AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.showImageInTheMenu)
         let isShowColorCode = AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.showColorPreviewInTheMenu)
-        let addNumbericKeyEquivalents = AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.addNumericKeyEquivalents)
-
-        var keyEquivalent = ""
-
-        if addNumbericKeyEquivalents && (index <= kMaxKeyEquivalents) {
-            var shortCutNumber = index + 1
-            if shortCutNumber == kMaxKeyEquivalents {
-                shortCutNumber = 0
-            }
-            keyEquivalent = "\(shortCutNumber)"
-        }
 
         let primaryPboardType = NSPasteboard.PasteboardType(rawValue: clip.primaryType)
         let clipString = clip.title
@@ -389,7 +375,7 @@ private extension MenuManager {
         let imageOnlyTitle = menuItemTitle("(Image)")
         let fileOnlyTitle = menuItemTitle("(Filenames)")
 
-        let menuItem = NSMenuItem(title: titleWithMark, action: #selector(AppDelegate.selectClipMenuItem(_:)), keyEquivalent: keyEquivalent)
+        let menuItem = NSMenuItem(title: titleWithMark, action: #selector(AppDelegate.selectClipMenuItem(_:)))
         menuItem.representedObject = clip.dataHash
         clipPreviewTextByItem[ObjectIdentifier(menuItem)] = clipString
         menuItem.toolTip = nil

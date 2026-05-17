@@ -8,9 +8,6 @@
 /* Class = "NSButtonCell"; title = "Place already copied history at the top"; ObjectID = "a32-zW-R74"; */
 "a32-zW-R74.title" = "重複した履歴をコピーする";
 
-/* Class = "NSButtonCell"; title = "Add key equivalents to numeric keys"; ObjectID = "hE2-DL-MKl"; */
-"hE2-DL-MKl.title" = "数字キーを使ったショートカットを追加";
-
 /* Class = "NSButtonCell"; title = "Show color code preview"; ObjectID = "hgW-RK-5oy"; */
 "hgW-RK-5oy.title" = "カラーコードのプレビューを表示";
 

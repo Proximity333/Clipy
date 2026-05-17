@@ -49,7 +49,6 @@ struct Constants {
         static let addClearHistoryMenuItem = "kCPYPrefAddClearHistoryMenuItemKey"
         static let showAlertBeforeClearHistory = "kCPYPrefShowAlertBeforeClearHistoryKey"
         static let showImageInTheMenu = "showImageInTheMenu"
-        static let addNumericKeyEquivalents = "addNumericKeyEquivalents"
         static let loginItem = "loginItem"
         static let suppressAlertForLoginItem = "suppressAlertForLoginItem"
         static let showStatusItem = "kCPYPrefShowStatusItemKey"
