@@ -202,10 +202,6 @@ private extension MenuManager {
                                         .compactMap { $0 }.distinctUntilChanged().map { _ in })
         menuChangedObservables.append(defaults.rx.observe(Int.self, Constants.UserDefaults.maxHistorySize, options: [.new], retainSelf: false)
                                         .compactMap { $0 }.distinctUntilChanged().map { _ in })
-        menuChangedObservables.append(defaults.rx.observe(Bool.self, Constants.UserDefaults.showIconInTheMenu, options: [.new], retainSelf: false)
-                                        .compactMap { $0 }.distinctUntilChanged().map { _ in })
-        menuChangedObservables.append(defaults.rx.observe(Bool.self, Constants.UserDefaults.showImageInTheMenu, options: [.new], retainSelf: false)
-                                        .compactMap { $0 }.distinctUntilChanged().map { _ in })
         menuChangedObservables.append(defaults.rx.observe(Bool.self, Constants.UserDefaults.showColorPreviewInTheMenu, options: [.new], retainSelf: false)
                                         .compactMap { $0 }.distinctUntilChanged().map { _ in })
         Observable.merge(menuChangedObservables)
@@ -249,13 +245,19 @@ private extension MenuManager {
         addSnippetItems(clipMenu!, separateMenu: true)
         addSnippetItems(snippetMenu!, separateMenu: false)
 
+        if AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.addClearHistoryMenuItem) {
+            clipMenu?.addItem(NSMenuItem.separator())
+            clipMenu?.addItem(NSMenuItem(title: L10n.clearHistory, action: #selector(AppDelegate.clearAllHistory)))
+
+            historyMenu?.addItem(NSMenuItem.separator())
+            historyMenu?.addItem(NSMenuItem(title: L10n.clearHistory, action: #selector(AppDelegate.clearAllHistory)))
+
+            statusMenu?.addItem(NSMenuItem(title: L10n.clearHistory, action: #selector(AppDelegate.clearAllHistory)))
+            statusMenu?.addItem(NSMenuItem.separator())
+        }
+
         clipMenu?.addItem(NSMenuItem.separator())
         statusMenu?.addItem(NSMenuItem.separator())
-
-        if AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.addClearHistoryMenuItem) {
-            clipMenu?.addItem(NSMenuItem(title: L10n.clearHistory, action: #selector(AppDelegate.clearAllHistory)))
-            statusMenu?.addItem(NSMenuItem(title: L10n.clearHistory, action: #selector(AppDelegate.clearAllHistory)))
-        }
 
         clipMenu?.addItem(NSMenuItem(title: L10n.editSnippets, action: #selector(AppDelegate.showSnippetEditorWindow)))
         clipMenu?.addItem(NSMenuItem(title: L10n.preferences, action: #selector(AppDelegate.showPreferenceWindow)))
@@ -318,7 +320,7 @@ private extension MenuManager {
         subMenu.delegate = self
         let subMenuItem = NSMenuItem(title: title, action: nil)
         subMenuItem.submenu = subMenu
-        subMenuItem.image = (AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.showIconInTheMenu)) ? folderIcon : nil
+        subMenuItem.image = folderIcon
         return subMenuItem
     }
 
@@ -365,7 +367,6 @@ private extension MenuManager {
     }
 
     func makeClipMenuItem(_ clip: CPYClip, index: Int) -> NSMenuItem {
-        let isShowImage = AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.showImageInTheMenu)
         let isShowColorCode = AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.showColorPreviewInTheMenu)
 
         let primaryPboardType = NSPasteboard.PasteboardType(rawValue: clip.primaryType)
@@ -388,7 +389,7 @@ private extension MenuManager {
             menuItem.title = fileOnlyTitle
         }
 
-        if !clip.thumbnailPath.isEmpty && !clip.isColorCode && isShowImage {
+        if !clip.thumbnailPath.isEmpty && !clip.isColorCode {
             let displayTitle: String
             if primaryPboardType == .deprecatedTIFF {
                 displayTitle = title.isEmpty ? "(Image)" : title
@@ -467,15 +468,13 @@ private extension MenuManager {
     }
 
     func makeSnippetMenuItem(_ snippet: CPYSnippet) -> NSMenuItem {
-        let isShowIcon = AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.showIconInTheMenu)
-
         let title = trimTitle(snippet.title)
         let titleWithMark = menuItemTitle(title)
 
         let menuItem = NSMenuItem(title: titleWithMark, action: #selector(AppDelegate.selectSnippetMenuItem(_:)), keyEquivalent: "")
         menuItem.representedObject = snippet.identifier
         menuItem.toolTip = nil
-        menuItem.image = (isShowIcon) ? snippetIcon : nil
+        menuItem.image = snippetIcon
 
         return menuItem
     }

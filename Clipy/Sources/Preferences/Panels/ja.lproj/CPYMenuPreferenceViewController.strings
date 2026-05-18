@@ -1,21 +1,15 @@
 
-/* Class = "NSButtonCell"; title = "Show Image"; ObjectID = "Drj-kg-Km5"; */
-"Drj-kg-Km5.title" = "画像を表示";
-
-/* Class = "NSButtonCell"; title = "Show alert panel before clear history"; ObjectID = "U2I-bu-kTR"; */
+/* Class = "NSButtonCell"; title = "Show an alert before clearing history"; ObjectID = "U2I-bu-kTR"; */
 "U2I-bu-kTR.title" = "履歴クリアの前に警告パネルを表示";
 
-/* Class = "NSButtonCell"; title = "Place already copied history at the top"; ObjectID = "a32-zW-R74"; */
+/* Class = "NSButtonCell"; title = "Place copied history items at the top"; ObjectID = "a32-zW-R74"; */
 "a32-zW-R74.title" = "重複した履歴をコピーする";
 
-/* Class = "NSButtonCell"; title = "Show color code preview"; ObjectID = "hgW-RK-5oy"; */
+/* Class = "NSButtonCell"; title = "Show color previews"; ObjectID = "hgW-RK-5oy"; */
 "hgW-RK-5oy.title" = "カラーコードのプレビューを表示";
 
-/* Class = "NSButtonCell"; title = "Move instead of copying (removes the older one from the list)"; ObjectID = "lsx-Y0-zFR"; */
+/* Class = "NSButtonCell"; title = "Move duplicates instead of copying them"; ObjectID = "lsx-Y0-zFR"; */
 "lsx-Y0-zFR.title" = "重複した履歴を上書きする";
 
-/* Class = "NSButtonCell"; title = "Add a menu item to clear clipboard history"; ObjectID = "p80-3o-bgA"; */
+/* Class = "NSButtonCell"; title = "Show a Clear History item in Paste History"; ObjectID = "p80-3o-bgA"; */
 "p80-3o-bgA.title" = "履歴をクリアするメニュー項目を追加";
-
-/* Class = "NSButtonCell"; title = "Display icons in menu items"; ObjectID = "yrU-qO-OwD"; */
-"yrU-qO-OwD.title" = "メニュー項目にアイコンを表示する";

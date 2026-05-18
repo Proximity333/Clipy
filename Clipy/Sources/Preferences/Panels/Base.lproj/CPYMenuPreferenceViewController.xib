@@ -13,24 +13,13 @@
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customView id="Hz6-mo-xeY">
-            <rect key="frame" x="0.0" y="0.0" width="480" height="211"/>
+            <rect key="frame" x="0.0" y="0.0" width="480" height="168"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
-                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jpT-JC-0Xd" customClass="CPYDesignableButton" customModule="Clipy" customModuleProvider="target">
-                    <rect key="frame" x="60" y="123" width="407" height="18"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Display icons in menu items" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="yrU-qO-OwD">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <binding destination="vgf-2t-abs" name="value" keyPath="values.kCPYPrefShowIconInTheMenuKey" id="Ywt-zc-fTm"/>
-                    </connections>
-                </button>
                 <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4d2-gO-mQL" customClass="CPYDesignableButton" customModule="Clipy" customModuleProvider="target">
-                    <rect key="frame" x="60" y="175" width="407" height="18"/>
+                    <rect key="frame" x="60" y="116" width="407" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Place already copied history at the top" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="a32-zW-R74">
+                    <buttonCell key="cell" type="check" title="Place copied history items at the top" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="a32-zW-R74">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -39,9 +28,9 @@
                     </connections>
                 </button>
                 <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2KT-cs-obj" customClass="CPYDesignableButton" customModule="Clipy" customModuleProvider="target">
-                    <rect key="frame" x="73" y="71" width="389" height="18"/>
+                    <rect key="frame" x="84" y="44" width="383" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Show alert panel before clear history" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="U2I-bu-kTR">
+                    <buttonCell key="cell" type="check" title="Show an alert before clearing history" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="U2I-bu-kTR">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -51,9 +40,9 @@
                     </connections>
                 </button>
                 <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="YdM-Mx-09r" customClass="CPYDesignableButton" customModule="Clipy" customModuleProvider="target">
-                    <rect key="frame" x="60" y="97" width="407" height="18"/>
+                    <rect key="frame" x="60" y="68" width="407" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Add a menu item to clear clipboard history" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="p80-3o-bgA">
+                    <buttonCell key="cell" type="check" title="Show a Clear History item in Paste History" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="p80-3o-bgA">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -61,21 +50,10 @@
                         <binding destination="vgf-2t-abs" name="value" keyPath="values.kCPYPrefAddClearHistoryMenuItemKey" id="91A-bL-l4H"/>
                     </connections>
                 </button>
-                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CPm-I8-QB8" customClass="CPYDesignableButton" customModule="Clipy" customModuleProvider="target">
-                    <rect key="frame" x="60" y="19" width="343" height="18"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Show Image" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Drj-kg-Km5">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <binding destination="vgf-2t-abs" name="value" keyPath="values.showImageInTheMenu" id="RRj-Ss-acq"/>
-                    </connections>
-                </button>
                 <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Bgn-nu-3fP" customClass="CPYDesignableButton" customModule="Clipy" customModuleProvider="target">
-                    <rect key="frame" x="59" y="45" width="370" height="18"/>
+                    <rect key="frame" x="60" y="20" width="407" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Show color code preview" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="hgW-RK-5oy">
+                    <buttonCell key="cell" type="check" title="Show color previews" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="hgW-RK-5oy">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -84,9 +62,9 @@
                     </connections>
                 </button>
                 <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZiB-2W-je4" customClass="CPYDesignableButton" customModule="Clipy" customModuleProvider="target">
-                    <rect key="frame" x="73" y="149" width="394" height="18"/>
+                    <rect key="frame" x="84" y="92" width="383" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Move instead of copying (removes the older one from the list)" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="lsx-Y0-zFR">
+                    <buttonCell key="cell" type="check" title="Move duplicates instead of copying them" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="lsx-Y0-zFR">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>

@@ -176,7 +176,6 @@ extension AppDelegate: NSApplicationDelegate {
         AppEnvironment.replaceCurrent(environment: AppEnvironment.fromStorage())
         // UserDefaults
         CPYUtilities.registerUserDefaultKeys()
-        updateApplicationActivationPolicy()
         // SDKs
         CPYUtilities.initSDKs()
         // Check Accessibility Permission
@@ -205,10 +204,6 @@ extension AppDelegate: NSApplicationDelegate {
 
         // Managers
         AppEnvironment.current.menuManager.setup()
-
-        if shouldShowRecoveryPreferences() {
-            showPreferenceWindow()
-        }
     }
 
     func applicationWillFinishLaunching(_ notification: Notification) {
@@ -221,22 +216,7 @@ extension AppDelegate: NSApplicationDelegate {
 
 // MARK: - Bind
 private extension AppDelegate {
-    func shouldShowRecoveryPreferences() -> Bool {
-        return AppEnvironment.current.defaults.integer(forKey: Constants.UserDefaults.showStatusItem) == 0
-    }
-
-    func updateApplicationActivationPolicy() {
-        let shouldShowDockIcon = shouldShowRecoveryPreferences()
-        NSApp.setActivationPolicy(shouldShowDockIcon ? .regular : .accessory)
-    }
-
     func bind() {
-        AppEnvironment.current.defaults.rx.observe(Int.self, Constants.UserDefaults.showStatusItem, retainSelf: false)
-            .compactMap { $0 }
-            .subscribe(onNext: { [weak self] _ in
-                self?.updateApplicationActivationPolicy()
-            })
-            .disposed(by: disposeBag)
         // Login Item
         AppEnvironment.current.defaults.rx.observe(Bool.self, Constants.UserDefaults.loginItem, retainSelf: false)
             .compactMap { $0 }

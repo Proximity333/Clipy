@@ -40,15 +40,12 @@ struct Constants {
 
     struct UserDefaults {
         static let hotKeys = "kCPYPrefHotKeysKey"
-        static let menuIconSize = "kCPYPrefMenuIconSizeKey"
         static let maxHistorySize = "kCPYPrefMaxHistorySizeKey"
         static let storeTypes = "kCPYPrefStoreTypesKey"
         static let inputPasteCommand = "kCPYPrefInputPasteCommandKey"
-        static let showIconInTheMenu = "kCPYPrefShowIconInTheMenuKey"
         static let reorderClipsAfterPasting = "kCPYPrefReorderClipsAfterPasting"
         static let addClearHistoryMenuItem = "kCPYPrefAddClearHistoryMenuItemKey"
         static let showAlertBeforeClearHistory = "kCPYPrefShowAlertBeforeClearHistoryKey"
-        static let showImageInTheMenu = "showImageInTheMenu"
         static let loginItem = "loginItem"
         static let suppressAlertForLoginItem = "suppressAlertForLoginItem"
         static let showStatusItem = "kCPYPrefShowStatusItemKey"
