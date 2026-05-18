@@ -811,6 +811,7 @@ extension MenuManager: SearchTextFieldDelegate {
 // MARK: - SearchPopoverDelegate
 extension MenuManager: SearchPopoverDelegate {
     func searchPopoverDidSelectResult(_ result: SearchPopoverController.ResultItem) {
+        let previousApp = searchPopoverController?.previousActiveApp
         let pasteService = AppEnvironment.current.pasteService
         switch result {
         case let .clip(clip):
@@ -819,7 +820,10 @@ extension MenuManager: SearchPopoverDelegate {
             pasteService.copyToPasteboard(with: snippet.content)
             pasteService.paste()
         }
+        let popover = searchPopoverController
         searchPopoverController = nil
+        popover?.close()
+        previousApp?.activate(options: [])
     }
 
     func searchPopoverDidCancel() {

@@ -15,7 +15,7 @@ protocol SearchPopoverDelegate: AnyObject {
     func searchPopoverDidCancel()
 }
 
-// swiftlint:disable type_body_length
+// swiftlint:disable type_body_length file_length
 final class SearchPopoverController: NSViewController {
     enum FilterTab: Int, CaseIterable {
         case all
@@ -52,11 +52,13 @@ final class SearchPopoverController: NSViewController {
     private var activeTab: FilterTab = .all
     private var searchWindow: SearchWindow?
     private var clickMonitor: Any?
+    private(set) var previousActiveApp: NSRunningApplication?
 
     private let searchContainer = NSView()
     private let searchField = NSSearchField()
     private let tabContainer = NSView()
     private let tabSegmentedControl = NSSegmentedControl()
+    private let settingsButton = NSButton()
     private let chromeView = NSView()
 
     private let contentContainer = NSView()
@@ -65,6 +67,7 @@ final class SearchPopoverController: NSViewController {
     private let metaContainer = NSView()
 
     private let listTitleLabel = NSTextField(labelWithString: "")
+    private let listActionButton = NSButton()
     private let tableView = NSTableView()
     private let scrollView = NSScrollView()
     private let emptyStateLabel = NSTextField(labelWithString: "未找到匹配的历史记录")
@@ -111,6 +114,7 @@ final class SearchPopoverController: NSViewController {
         applyTheme()
         NotificationCenter.default.addObserver(self, selector: #selector(handleThemeDidChange), name: .themeDidChange, object: nil)
         reloadResults(keepSelection: false)
+        updateListActionButton()
     }
 
     // MARK: - Setup
@@ -172,6 +176,19 @@ final class SearchPopoverController: NSViewController {
         tabSegmentedControl.action = #selector(tabChanged(_:))
         tabSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
         tabContainer.addSubview(tabSegmentedControl)
+
+        settingsButton.bezelStyle = .texturedRounded
+        settingsButton.isBordered = false
+        if #available(macOS 11.0, *) {
+            settingsButton.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "设置")
+        } else {
+            settingsButton.image = NSImage(named: NSImage.Name("NSActionTemplate"))
+        }
+        settingsButton.imagePosition = .imageOnly
+        settingsButton.target = self
+        settingsButton.action = #selector(openSettings)
+        settingsButton.translatesAutoresizingMaskIntoConstraints = false
+        searchContainer.addSubview(settingsButton)
     }
 
     private func setupContentContainers() {
@@ -196,6 +213,14 @@ final class SearchPopoverController: NSViewController {
         listTitleLabel.stringValue = FilterTab.history.title
         listTitleLabel.translatesAutoresizingMaskIntoConstraints = false
         listContainer.addSubview(listTitleLabel)
+
+        listActionButton.bezelStyle = .texturedRounded
+        listActionButton.isBordered = false
+        listActionButton.font = NSFont.systemFont(ofSize: 10, weight: .medium)
+        listActionButton.target = self
+        listActionButton.action = #selector(listActionClicked)
+        listActionButton.translatesAutoresizingMaskIntoConstraints = false
+        listContainer.addSubview(listActionButton)
 
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("ClipColumn"))
         column.resizingMask = .autoresizingMask
@@ -309,7 +334,7 @@ final class SearchPopoverController: NSViewController {
             searchField.trailingAnchor.constraint(equalTo: tabContainer.leadingAnchor, constant: -10),
             searchField.centerYAnchor.constraint(equalTo: searchContainer.centerYAnchor),
 
-            tabContainer.trailingAnchor.constraint(equalTo: searchContainer.trailingAnchor, constant: -10),
+            tabContainer.trailingAnchor.constraint(equalTo: settingsButton.leadingAnchor, constant: -6),
             tabContainer.centerYAnchor.constraint(equalTo: searchContainer.centerYAnchor),
             tabContainer.widthAnchor.constraint(equalToConstant: 250),
             tabContainer.heightAnchor.constraint(equalToConstant: 28),
@@ -317,6 +342,11 @@ final class SearchPopoverController: NSViewController {
             tabSegmentedControl.leadingAnchor.constraint(equalTo: tabContainer.leadingAnchor, constant: 6),
             tabSegmentedControl.trailingAnchor.constraint(equalTo: tabContainer.trailingAnchor, constant: -6),
             tabSegmentedControl.centerYAnchor.constraint(equalTo: tabContainer.centerYAnchor),
+
+            settingsButton.trailingAnchor.constraint(equalTo: searchContainer.trailingAnchor, constant: -10),
+            settingsButton.centerYAnchor.constraint(equalTo: searchContainer.centerYAnchor),
+            settingsButton.widthAnchor.constraint(equalToConstant: 24),
+            settingsButton.heightAnchor.constraint(equalToConstant: 24),
 
             contentContainer.topAnchor.constraint(equalTo: searchContainer.bottomAnchor, constant: 12),
             contentContainer.leadingAnchor.constraint(equalTo: chromeView.leadingAnchor, constant: 14),
@@ -341,7 +371,10 @@ final class SearchPopoverController: NSViewController {
 
             listTitleLabel.topAnchor.constraint(equalTo: listContainer.topAnchor, constant: 10),
             listTitleLabel.leadingAnchor.constraint(equalTo: listContainer.leadingAnchor, constant: 16),
-            listTitleLabel.trailingAnchor.constraint(equalTo: listContainer.trailingAnchor, constant: -16),
+            listTitleLabel.trailingAnchor.constraint(lessThanOrEqualTo: listActionButton.leadingAnchor, constant: -8),
+
+            listActionButton.trailingAnchor.constraint(equalTo: listContainer.trailingAnchor, constant: -12),
+            listActionButton.centerYAnchor.constraint(equalTo: listTitleLabel.centerYAnchor),
 
             scrollView.topAnchor.constraint(equalTo: listTitleLabel.bottomAnchor, constant: 8),
             scrollView.leadingAnchor.constraint(equalTo: listContainer.leadingAnchor, constant: 4),
@@ -395,7 +428,30 @@ final class SearchPopoverController: NSViewController {
 
     // MARK: - Public Methods
     func show(at location: NSPoint) {
-        searchWindow = SearchWindow(contentRect: NSRect(x: location.x, y: location.y, width: 640, height: 420), contentViewController: self)
+        previousActiveApp = NSWorkspace.shared.frontmostApplication
+
+        let windowWidth: CGFloat = 640
+        let windowHeight: CGFloat = 420
+        let screen = NSScreen.screens.first { NSMouseInRect(location, $0.frame, false) } ?? NSScreen.main
+        let visibleFrame = screen?.visibleFrame ?? .zero
+
+        var originX = location.x
+        var originY = location.y - windowHeight
+
+        if originX + windowWidth > visibleFrame.maxX {
+            originX = visibleFrame.maxX - windowWidth
+        }
+        if originX < visibleFrame.minX {
+            originX = visibleFrame.minX
+        }
+        if originY < visibleFrame.minY {
+            originY = visibleFrame.minY
+        }
+        if originY + windowHeight > visibleFrame.maxY {
+            originY = visibleFrame.maxY - windowHeight
+        }
+
+        searchWindow = SearchWindow(contentRect: NSRect(x: originX, y: originY, width: windowWidth, height: windowHeight), contentViewController: self)
         searchWindow?.delegate = self
         NSApp.activate(ignoringOtherApps: true)
         searchWindow?.makeKeyAndOrderFront(nil)
@@ -694,6 +750,50 @@ final class SearchPopoverController: NSViewController {
         guard let tab = FilterTab(rawValue: sender.selectedSegment) else { return }
         activeTab = tab
         filter(with: searchField.stringValue)
+        updateListActionButton()
+    }
+
+    @objc private func openSettings() {
+        delegate?.searchPopoverDidCancel()
+        close()
+        NSApp.activate(ignoringOtherApps: true)
+        if let appDelegate = NSApp.delegate as? AppDelegate {
+            appDelegate.showPreferenceWindow()
+        }
+    }
+
+    private func updateListActionButton() {
+        switch activeTab {
+        case .history:
+            listActionButton.title = "清空"
+            listActionButton.isHidden = false
+        case .snippets:
+            listActionButton.title = "编辑"
+            listActionButton.isHidden = false
+        case .all:
+            listActionButton.isHidden = true
+        }
+    }
+
+    @objc private func listActionClicked() {
+        switch activeTab {
+        case .history:
+            delegate?.searchPopoverDidCancel()
+            close()
+            NSApp.activate(ignoringOtherApps: true)
+            if let appDelegate = NSApp.delegate as? AppDelegate {
+                appDelegate.clearAllHistory()
+            }
+        case .snippets:
+            delegate?.searchPopoverDidCancel()
+            close()
+            NSApp.activate(ignoringOtherApps: true)
+            if let appDelegate = NSApp.delegate as? AppDelegate {
+                appDelegate.showSnippetEditorWindow()
+            }
+        case .all:
+            break
+        }
     }
 }
 // swiftlint:enable type_body_length
@@ -831,11 +931,6 @@ private final class SearchWindow: NSWindow {
         contentView?.superview?.layer?.cornerRadius = 18
         contentView?.superview?.layer?.masksToBounds = true
         contentView?.superview?.layer?.backgroundColor = NSColor.clear.cgColor
-
-        // Adjust position so it shows below the cursor location
-        var frame = self.frame
-        frame.origin.y -= frame.height
-        setFrame(frame, display: true)
     }
 }
 
