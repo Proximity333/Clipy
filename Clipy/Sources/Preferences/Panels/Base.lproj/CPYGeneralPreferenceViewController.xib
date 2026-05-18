@@ -7,6 +7,7 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="CPYGeneralPreferenceViewController" customModule="Clipy" customModuleProvider="target">
             <connections>
+                <outlet property="statusBarIconPopup" destination="jEa-zd-juz" id="E9E-4k-BFk"/>
                 <outlet property="themePopup" destination="tPp-Th-Thm" id="tPp-Th-Conn"/>
                 <outlet property="view" destination="Hz6-mo-xeY" id="0bl-1N-x8E"/>
             </connections>
@@ -190,7 +191,7 @@
                         </menu>
                     </popUpButtonCell>
                     <connections>
-                        <binding destination="Rq0-bo-cst" name="selectedTag" keyPath="values.kCPYPrefShowStatusItemKey" id="V2a-RQ-fcT"/>
+                        <action selector="statusBarIconChanged:" target="-2" id="0Bo-jE-SX1"/>
                     </connections>
                 </popUpButton>
             </subviews>
