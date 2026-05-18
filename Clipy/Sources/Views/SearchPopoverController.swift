@@ -91,7 +91,7 @@ final class SearchPopoverController: NSViewController {
         self.clips = clips
         let realm = try! Realm()
         self.snippets = Array(realm.objects(CPYSnippet.self).filter("enable == true").sorted(byKeyPath: #keyPath(CPYSnippet.index), ascending: true))
-        self.filteredResults = clips.map(ResultItem.clip)
+        self.filteredResults = clips.map(ResultItem.clip) + self.snippets.map(ResultItem.snippet)
         super.init(nibName: nil, bundle: nil)
     }
 
