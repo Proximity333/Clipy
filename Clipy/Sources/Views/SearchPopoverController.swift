@@ -85,6 +85,7 @@ final class SearchPopoverController: NSViewController {
     private let typeValueLabel = NSTextField(labelWithString: "-")
     private let sizeKeyLabel = NSTextField(labelWithString: "尺寸")
     private let sizeValueLabel = NSTextField(labelWithString: "-")
+    private let quitButton = NSButton()
 
     // MARK: - Initialization
     init(clips: [CPYClip]) {
@@ -316,6 +317,19 @@ final class SearchPopoverController: NSViewController {
             $0.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
             $0.textColor = .labelColor
         }
+
+        quitButton.bezelStyle = .texturedRounded
+        quitButton.isBordered = false
+        if #available(macOS 11.0, *) {
+            quitButton.image = NSImage(systemSymbolName: "power", accessibilityDescription: "退出")
+        } else {
+            quitButton.image = NSImage(named: NSImage.stopProgressTemplateName)
+        }
+        quitButton.imagePosition = .imageOnly
+        quitButton.target = self
+        quitButton.action = #selector(quitApplication)
+        quitButton.translatesAutoresizingMaskIntoConstraints = false
+        metaContainer.addSubview(quitButton)
     }
 
     private func setupConstraints() {
@@ -422,7 +436,12 @@ final class SearchPopoverController: NSViewController {
             sizeKeyLabel.topAnchor.constraint(equalTo: metaContainer.topAnchor, constant: 8),
             sizeKeyLabel.leadingAnchor.constraint(equalTo: metaContainer.leadingAnchor, constant: 170),
             sizeValueLabel.topAnchor.constraint(equalTo: sizeKeyLabel.bottomAnchor, constant: 1),
-            sizeValueLabel.leadingAnchor.constraint(equalTo: sizeKeyLabel.leadingAnchor)
+            sizeValueLabel.leadingAnchor.constraint(equalTo: sizeKeyLabel.leadingAnchor),
+
+            quitButton.centerYAnchor.constraint(equalTo: metaContainer.centerYAnchor),
+            quitButton.trailingAnchor.constraint(equalTo: metaContainer.trailingAnchor, constant: -12),
+            quitButton.widthAnchor.constraint(equalToConstant: 24),
+            quitButton.heightAnchor.constraint(equalToConstant: 24)
         ])
     }
 
@@ -646,7 +665,7 @@ final class SearchPopoverController: NSViewController {
         previewImageView.isHidden = previewImage == nil
         previewImageHeightConstraint?.constant = previewImage == nil ? 0 : 140
 
-        let previewText = previewText(for: data)
+        let previewText = previewText(for: data, image: previewImage)
         previewTextView.string = previewText
         previewTextScrollView.isHidden = previewImage != nil && previewText.isEmpty
         previewTextScrollView.hasVerticalScroller = true
@@ -692,7 +711,15 @@ final class SearchPopoverController: NSViewController {
         return data.colorCodeImage
     }
 
-    private func previewText(for data: CPYClipData) -> String {
+    private func previewText(for data: CPYClipData, image: NSImage?) -> String {
+        if image != nil, let fileName = data.fileNames.first {
+            let pathExtension = URL(fileURLWithPath: fileName).pathExtension.lowercased()
+            let imageFileExtensions = ["jpg", "jpeg", "png", "bmp", "tiff"]
+            if imageFileExtensions.contains(pathExtension) {
+                return ""
+            }
+        }
+
         if !data.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return data.stringValue
         }
@@ -759,6 +786,16 @@ final class SearchPopoverController: NSViewController {
         NSApp.activate(ignoringOtherApps: true)
         if let appDelegate = NSApp.delegate as? AppDelegate {
             appDelegate.showPreferenceWindow()
+        }
+    }
+
+    @objc private func quitApplication() {
+        delegate?.searchPopoverDidCancel()
+        close()
+        if let appDelegate = NSApp.delegate as? AppDelegate {
+            appDelegate.terminate()
+        } else {
+            NSApp.terminate(nil)
         }
     }
 
