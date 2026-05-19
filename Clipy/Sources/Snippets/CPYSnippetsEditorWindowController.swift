@@ -67,6 +67,9 @@ final class CPYSnippetsEditorWindowController: NSWindowController {
         if #available(OSX 10.10, *) {
             self.window?.titlebarAppearsTransparent = true
         }
+        if let contentView = self.window?.contentView {
+            applyOverlayScrollerStyle(in: contentView)
+        }
         // HACK: Copy as an object that does not put under Realm management.
         // https://github.com/realm/realm-cocoa/issues/1734
         let realm = try! Realm()
@@ -84,6 +87,15 @@ final class CPYSnippetsEditorWindowController: NSWindowController {
     override func showWindow(_ sender: Any?) {
         super.showWindow(sender)
         window?.makeKeyAndOrderFront(self)
+    }
+
+    private func applyOverlayScrollerStyle(in view: NSView) {
+        if let scrollView = view as? NSScrollView {
+            scrollView.scrollerStyle = .overlay
+            scrollView.autohidesScrollers = true
+        }
+
+        view.subviews.forEach { applyOverlayScrollerStyle(in: $0) }
     }
 }
 

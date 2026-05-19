@@ -242,6 +242,7 @@ final class SearchPopoverController: NSViewController {
         scrollView.documentView = tableView
         scrollView.drawsBackground = false
         scrollView.hasVerticalScroller = true
+        scrollView.autohidesScrollers = true
         scrollView.scrollerStyle = .overlay
         scrollView.borderType = .noBorder
         scrollView.translatesAutoresizingMaskIntoConstraints = false

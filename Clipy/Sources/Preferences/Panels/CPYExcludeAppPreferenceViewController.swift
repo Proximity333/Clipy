@@ -15,6 +15,20 @@ import Cocoa
 class CPYExcludeAppPreferenceViewController: NSViewController {
     // MARK: - Properties
     @IBOutlet private weak var tableView: NSTableView!
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        applyOverlayScrollerStyle(in: view)
+    }
+
+    private func applyOverlayScrollerStyle(in view: NSView) {
+        if let scrollView = view as? NSScrollView {
+            scrollView.scrollerStyle = .overlay
+            scrollView.autohidesScrollers = true
+        }
+
+        view.subviews.forEach { applyOverlayScrollerStyle(in: $0) }
+    }
 }
 
 // MARK: - IBActions
