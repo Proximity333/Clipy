@@ -471,6 +471,14 @@ final class SearchPopoverController: NSViewController {
         }
 
         searchWindow = SearchWindow(contentRect: NSRect(x: originX, y: originY, width: windowWidth, height: windowHeight), contentViewController: self)
+        searchWindow?.preferredFirstResponder = searchField
+        searchWindow?.onEscape = { [weak self] in
+            self?.delegate?.searchPopoverDidCancel()
+            self?.close()
+        }
+        searchWindow?.onTabNavigation = { [weak self] movesForward in
+            self?.selectAdjacentTab(movingForward: movesForward)
+        }
         searchWindow?.delegate = self
         NSApp.activate(ignoringOtherApps: true)
         searchWindow?.makeKeyAndOrderFront(nil)
@@ -780,6 +788,21 @@ final class SearchPopoverController: NSViewController {
         updateListActionButton()
     }
 
+    private func selectAdjacentTab(movingForward: Bool) {
+        let allTabs = FilterTab.allCases
+        guard let currentIndex = allTabs.firstIndex(of: activeTab) else { return }
+
+        let nextIndex: Int
+        if movingForward {
+            nextIndex = (currentIndex + 1) % allTabs.count
+        } else {
+            nextIndex = (currentIndex - 1 + allTabs.count) % allTabs.count
+        }
+
+        tabSegmentedControl.selectedSegment = allTabs[nextIndex].rawValue
+        tabChanged(tabSegmentedControl)
+    }
+
     @objc private func openSettings() {
         delegate?.searchPopoverDidCancel()
         close()
@@ -852,6 +875,16 @@ extension SearchPopoverController: NSSearchFieldDelegate {
             guard let result = selectedResult() else { return true }
             delegate?.searchPopoverDidSelectResult(result)
             close()
+            return true
+        }
+
+        if commandSelector == #selector(insertTab(_:)) {
+            selectAdjacentTab(movingForward: true)
+            return true
+        }
+
+        if commandSelector == #selector(insertBacktab(_:)) {
+            selectAdjacentTab(movingForward: false)
             return true
         }
 
@@ -941,6 +974,9 @@ extension SearchPopoverController: NSWindowDelegate {
 private final class SearchWindow: NSWindow {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
+    weak var preferredFirstResponder: NSResponder?
+    var onEscape: (() -> Void)?
+    var onTabNavigation: ((Bool) -> Void)?
 
     init(contentRect: NSRect, contentViewController: NSViewController) {
         super.init(
@@ -968,6 +1004,38 @@ private final class SearchWindow: NSWindow {
         contentView?.superview?.layer?.cornerRadius = 18
         contentView?.superview?.layer?.masksToBounds = true
         contentView?.superview?.layer?.backgroundColor = NSColor.clear.cgColor
+    }
+
+    override func cancelOperation(_ sender: Any?) {
+        onEscape?()
+    }
+
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .keyDown, event.keyCode == 48 {
+            let movesForward = !event.modifierFlags.contains(.shift)
+            onTabNavigation?(movesForward)
+            return
+        }
+
+        super.sendEvent(event)
+
+        if event.type == .leftMouseDown || event.type == .rightMouseDown {
+            restorePreferredFirstResponder()
+        }
+    }
+
+    private func restorePreferredFirstResponder() {
+        guard isKeyWindow,
+              let preferredFirstResponder,
+              firstResponder !== preferredFirstResponder,
+              fieldEditor(false, for: preferredFirstResponder) !== firstResponder else {
+            return
+        }
+
+        DispatchQueue.main.async { [weak self, weak preferredFirstResponder] in
+            guard let self, self.isKeyWindow, let preferredFirstResponder else { return }
+            self.makeFirstResponder(preferredFirstResponder)
+        }
     }
 }
 

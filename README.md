@@ -30,6 +30,85 @@ __Distribution Site__ : <https://clipy-app.com>
 2. Open `Clipy.xcworkspace` on Xcode.
 3. build.
 
+### Release Checklist
+1. Start from a clean, reviewed branch and install dependencies.
+
+```sh
+bundle install --path=vendor/bundle && bundle exec pod install
+```
+
+2. Update the app version in `Clipy/Supporting Files/Info.plist`.
+Set both `CFBundleShortVersionString` and `CFBundleVersion` to the release version, for example `2.1.3`.
+
+3. Run the release verification path before packaging.
+
+```sh
+bundle exec fastlane test
+```
+
+4. Commit the version bump and any release notes changes.
+
+```sh
+git add "Clipy/Supporting Files/Info.plist"
+git commit -m "Bump version to 2.1.3"
+```
+
+5. Create the release tag before building the final artifact.
+
+```sh
+git tag v2.1.3
+```
+
+6. Build the release app into a disposable local output directory.
+
+```sh
+xcodebuild -workspace "Clipy.xcworkspace" -scheme "Clipy" -configuration Release -derivedDataPath build/DerivedData ENABLE_TESTABILITY=YES build
+```
+
+7. Package the built app for upload.
+
+```sh
+mkdir -p dist
+ditto -c -k --sequesterRsrc --keepParent "build/DerivedData/Build/Products/Release/Clipy.app" "dist/Clipy-v2.1.3.zip"
+```
+
+8. Push both the branch and the tag to GitHub.
+
+```sh
+git push origin HEAD
+git push origin v2.1.3
+```
+
+9. Create the GitHub release and upload the packaged artifact.
+
+```sh
+gh release create v2.1.3 "dist/Clipy-v2.1.3.zip" --title "v2.1.3" --notes-file RELEASE_NOTES.md
+```
+
+If you do not keep release notes in a file, replace `--notes-file RELEASE_NOTES.md` with `--generate-notes` or `--notes "..."`.
+
+10. Clean local build outputs after the release is published.
+
+```sh
+rm -rf dist build
+rm -rf ~/Library/Developer/Xcode/DerivedData/Clipy-*
+```
+
+11. Remove any locally copied or debug-built `Clipy.app` bundles that were left outside the standard install location.
+This prevents Launchpad, Spotlight, and other app lists from showing multiple identical Clipy entries after repeated build and release runs.
+
+Check common locations such as:
+
+```text
+~/Applications/
+~/Desktop/
+~/Downloads/
+build/DerivedData/Build/Products/Release/
+~/Library/Developer/Xcode/DerivedData/Clipy-*/Build/Products/
+```
+
+Keep only the one install you actually want to use, then empty Trash if you deleted extra app bundles.
+
 ### Contributing
 1. Fork it ( https://github.com/Clipy/Clipy/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
