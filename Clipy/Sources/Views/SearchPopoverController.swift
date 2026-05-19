@@ -241,8 +241,9 @@ final class SearchPopoverController: NSViewController {
 
         scrollView.documentView = tableView
         scrollView.drawsBackground = false
+        scrollView.verticalScroller = ThinScroller()
         scrollView.hasVerticalScroller = true
-        scrollView.autohidesScrollers = true
+        scrollView.autohidesScrollers = false
         scrollView.scrollerStyle = .overlay
         scrollView.borderType = .noBorder
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -288,9 +289,10 @@ final class SearchPopoverController: NSViewController {
 
         previewTextScrollView.drawsBackground = false
         previewTextScrollView.borderType = .noBorder
+        previewTextScrollView.verticalScroller = ThinScroller()
         previewTextScrollView.hasVerticalScroller = true
         previewTextScrollView.hasHorizontalScroller = false
-        previewTextScrollView.autohidesScrollers = true
+        previewTextScrollView.autohidesScrollers = false
         previewTextScrollView.scrollerStyle = .overlay
         previewTextScrollView.translatesAutoresizingMaskIntoConstraints = false
         previewContainer.addSubview(previewTextScrollView)
@@ -498,7 +500,7 @@ final class SearchPopoverController: NSViewController {
     }
 
     private func setupClickOutsideMonitor() {
-        clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+        clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             guard let self, let window = self.searchWindow else { return }
             let location = NSEvent.mouseLocation
             if !window.frame.contains(location) {
@@ -1040,10 +1042,35 @@ private final class SearchWindow: NSWindow {
     }
 }
 
+private final class ThinScroller: NSScroller {
+    override class func scrollerWidth(for controlSize: NSControl.ControlSize, scrollerStyle: NSScroller.Style) -> CGFloat {
+        16
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        NSColor.clear.setFill()
+        dirtyRect.fill()
+        drawKnob()
+    }
+
+    override func drawKnob() {
+        let knobRect = rect(for: .knob).insetBy(dx: 2, dy: 2)
+        let radius = knobRect.width / 2
+        let knobPath = NSBezierPath(roundedRect: knobRect, xRadius: radius, yRadius: radius)
+        NSColor.tertiaryLabelColor.setFill()
+        knobPath.fill()
+    }
+
+    override func drawKnobSlot(in slotRect: NSRect, highlight flag: Bool) {
+        NSColor.clear.setFill()
+        slotRect.fill()
+    }
+}
+
 private final class SearchResultRowView: NSTableRowView {
     override var isEmphasized: Bool {
         get { true }
-        set { }
+        set { _ = newValue }
     }
 
     override func drawSelection(in dirtyRect: NSRect) {
