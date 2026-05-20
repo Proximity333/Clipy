@@ -415,7 +415,7 @@ final class SearchPopoverController: NSViewController {
             }(),
 
             {
-                let constraint = previewTextScrollView.topAnchor.constraint(equalTo: previewTitleLabel.bottomAnchor, constant: 12)
+                let constraint = previewTextScrollView.topAnchor.constraint(equalTo: previewImageView.bottomAnchor, constant: 12)
                 self.previewTextTopConstraint = constraint
                 return constraint
             }(),
@@ -750,6 +750,10 @@ final class SearchPopoverController: NSViewController {
     }
 
     private func typeLabel(for data: CPYClipData) -> String {
+        let hasText = !data.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        if (data.image != nil || data.thumbnailImage != nil) && hasText {
+            return "混合内容"
+        }
         if data.image != nil || data.thumbnailImage != nil {
             return "图片"
         }
