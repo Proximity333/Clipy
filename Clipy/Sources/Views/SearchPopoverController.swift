@@ -243,7 +243,7 @@ final class SearchPopoverController: NSViewController {
         scrollView.drawsBackground = false
         scrollView.verticalScroller = ThinScroller()
         scrollView.hasVerticalScroller = true
-        scrollView.autohidesScrollers = false
+        scrollView.autohidesScrollers = true
         scrollView.scrollerStyle = .overlay
         scrollView.borderType = .noBorder
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -292,7 +292,7 @@ final class SearchPopoverController: NSViewController {
         previewTextScrollView.verticalScroller = ThinScroller()
         previewTextScrollView.hasVerticalScroller = true
         previewTextScrollView.hasHorizontalScroller = false
-        previewTextScrollView.autohidesScrollers = false
+        previewTextScrollView.autohidesScrollers = true
         previewTextScrollView.scrollerStyle = .overlay
         previewTextScrollView.translatesAutoresizingMaskIntoConstraints = false
         previewContainer.addSubview(previewTextScrollView)
