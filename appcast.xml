@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"
+     xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Clipy Updates</title>
+    <link>https://github.com/Proximity333/Clipy</link>
+    <description>Clipy app updates</description>
+    <item>
+      <title>Clipy 2.1.7</title>
+      <sparkle:version>2.1.7</sparkle:version>
+      <sparkle:shortVersionString>2.1.7</sparkle:shortVersionString>
+      <pubDate>Thu, 21 May 2026 09:53:00 +0000</pubDate>
+      <sparkle:releaseNotesLink>https://github.com/Proximity333/Clipy/releases/tag/v2.1.7</sparkle:releaseNotesLink>
+      <enclosure
+        url="https://github.com/Proximity333/Clipy/releases/download/v2.1.7/Clipy-2.1.7.zip"
+        sparkle:edSignature="3RUcqMLosPYHPvpsCS7fdQ9s+AlaROCuX2ReJsgUAQ9MywM7wBtjPiIkDp63zGsawyuvxpB9Dea7+PgYuj3LCg=="
+        length="32100301"
+        type="application/octet-stream" />
+    </item>
+  </channel>
+</rss>
