@@ -15,6 +15,9 @@
 - Update the app version before tagging and packaging.
 - Create a new git tag for the release version before packaging, for example `git tag v2.0.1`.
 - Build the release app with `xcodebuild -workspace Clipy.xcworkspace -scheme Clipy -configuration Release -derivedDataPath build/DerivedData ENABLE_TESTABILITY=YES build`, then package `build/DerivedData/Build/Products/Release/Clipy.app`.
+- After packaging, update `appcast.xml` to the new version and point it at the exact uploaded release asset URL.
+- Generate a new Sparkle `sparkle:edSignature` for the packaged archive with `Pods/Sparkle/bin/sign_update`; use the repo-local ignored key path `.release-secrets/sparkle_ed25519_private_key.txt` with `--ed-key-file`, or a login keychain key if available.
+- Push the `appcast.xml` update to the feed branch after the GitHub release asset is uploaded, otherwise the in-app updater will continue advertising the previous version.
 - Commit the source changes and push both the branch and the tag to `origin`.
 - Use `gh release create` to publish the GitHub release and upload the packaged artifact.
 - After publishing, clean local outputs with `rm -rf dist build` and always remove Xcode build outputs for this project with `rm -rf ~/Library/Developer/Xcode/DerivedData/Clipy-*`.
