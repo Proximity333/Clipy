@@ -95,33 +95,21 @@ gh release create v2.1.3 "dist/Clipy-v2.1.3.zip" --title "v2.1.3" --notes-file R
 
 If you do not keep release notes in a file, replace `--notes-file RELEASE_NOTES.md` with `--generate-notes` or `--notes "..."`.
 
-10. Keep the Sparkle private key in the repo-local ignored path `.release-secrets/sparkle_ed25519_private_key.txt`.
-
-Add `.release-secrets/` to `.gitignore` and never commit the private key.
-
-11. Update `appcast.xml` after the release asset exists.
+10. Update `appcast.xml` after the release asset exists.
 
 - Set `<title>`, `<sparkle:version>`, `<sparkle:shortVersionString>`, and `<sparkle:releaseNotesLink>` to the new release.
-- Point the enclosure `url` at the exact GitHub release asset URL, for example `https://github.com/<owner>/<repo>/releases/download/v2.1.3/Clipy-v2.1.3.zip`.
-- Generate the enclosure signature from the packaged archive:
-
-```sh
-Pods/Sparkle/bin/sign_update --ed-key-file ".release-secrets/sparkle_ed25519_private_key.txt" "dist/Clipy-v2.1.3.zip"
-```
-
-- Copy the reported `sparkle:edSignature` and `length` values into the enclosure.
+- Set `<link>` to the exact GitHub ZIP asset URL, for example `https://github.com/<owner>/<repo>/releases/download/v2.1.3/Clipy-v2.1.3.zip`.
+- Do not include an `<enclosure>` element. Sparkle is used only to notify users about a new version and open the download link in the browser.
 - Commit and push `appcast.xml` after the release upload is live so the in-app updater can see the new version.
 
-This step requires the Sparkle private Ed25519 key, either from the repo-local ignored file above or from your login keychain under the default `ed25519` account.
-
-12. Clean local build outputs after the release is published.
+11. Clean local build outputs after the release is published.
 
 ```sh
 rm -rf dist build
 rm -rf ~/Library/Developer/Xcode/DerivedData/Clipy-*
 ```
 
-13. Remove any locally copied or debug-built `Clipy.app` bundles that were left outside the standard install location.
+12. Remove any locally copied or debug-built `Clipy.app` bundles that were left outside the standard install location.
 This prevents Launchpad, Spotlight, and other app lists from showing multiple identical Clipy entries after repeated build and release runs.
 
 Check common locations such as:
