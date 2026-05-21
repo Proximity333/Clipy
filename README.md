@@ -72,6 +72,14 @@ mkdir -p dist
 ditto -c -k --sequesterRsrc --keepParent "build/DerivedData/Build/Products/Release/Clipy.app" "dist/Clipy-v2.1.3.zip"
 ```
 
+Before uploading, verify the packaged app does not include test bundles or XCTest frameworks:
+
+```sh
+unzip -l "dist/Clipy-v2.1.3.zip" | grep -E "ClipyTests|XCTest|Testing\.framework|PlugIns"
+```
+
+This command should print nothing.
+
 8. Push both the branch and the tag to GitHub.
 
 ```sh
