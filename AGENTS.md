@@ -17,7 +17,7 @@
 - Build the release app with `xcodebuild -workspace Clipy.xcworkspace -scheme Clipy -configuration Release -derivedDataPath build/DerivedData ENABLE_TESTABILITY=YES build`, then package `build/DerivedData/Build/Products/Release/Clipy.app`.
 - Commit the source changes and push both the branch and the tag to `origin`.
 - Use `gh release create` to publish the GitHub release and upload the packaged artifact.
-- After publishing, clean local outputs with `rm -rf dist build` and remove Xcode build outputs for this project with `rm -rf ~/Library/Developer/Xcode/DerivedData/Clipy-*` when needed.
+- After publishing, clean local outputs with `rm -rf dist build` and always remove Xcode build outputs for this project with `rm -rf ~/Library/Developer/Xcode/DerivedData/Clipy-*`.
 
 ## Generated And Scripted Files
 

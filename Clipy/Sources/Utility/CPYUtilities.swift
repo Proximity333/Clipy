@@ -51,15 +51,6 @@ final class CPYUtilities {
         defaultValues.updateValue(NSNumber(value: true), forKey: Constants.Update.enableAutomaticCheck)
         defaultValues.updateValue(NSNumber(value: 86400), forKey: Constants.Update.checkInterval)
 
-        /* Beta */
-        defaultValues.updateValue(NSNumber(value: true), forKey: Constants.Beta.pastePlainText)
-        defaultValues.updateValue(NSNumber(value: 0), forKey: Constants.Beta.pastePlainTextModifier)
-        defaultValues.updateValue(NSNumber(value: false), forKey: Constants.Beta.deleteHistory)
-        defaultValues.updateValue(NSNumber(value: 0), forKey: Constants.Beta.deleteHistoryModifier)
-        defaultValues.updateValue(NSNumber(value: false), forKey: Constants.Beta.pasteAndDeleteHistory)
-        defaultValues.updateValue(NSNumber(value: 0), forKey: Constants.Beta.pasteAndDeleteHistoryModifier)
-        defaultValues.updateValue(NSNumber(value: false), forKey: Constants.Beta.observerScreenshot)
-
         AppEnvironment.current.defaults.register(defaults: defaultValues)
         AppEnvironment.current.defaults.synchronize()
     }

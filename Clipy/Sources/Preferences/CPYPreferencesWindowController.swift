@@ -24,7 +24,6 @@ final class CPYPreferencesWindowController: NSWindowController {
     @IBOutlet private weak var excludeImageView: NSImageView!
     @IBOutlet private weak var shortcutsImageView: NSImageView!
     @IBOutlet private weak var updatesImageView: NSImageView!
-    @IBOutlet private weak var betaImageView: NSImageView!
     // Labels
     @IBOutlet private weak var generalTextField: NSTextField!
     @IBOutlet private weak var menuTextField: NSTextField!
@@ -32,7 +31,6 @@ final class CPYPreferencesWindowController: NSWindowController {
     @IBOutlet private weak var excludeTextField: NSTextField!
     @IBOutlet private weak var shortcutsTextField: NSTextField!
     @IBOutlet private weak var updatesTextField: NSTextField!
-    @IBOutlet private weak var betaTextField: NSTextField!
     // Buttons
     @IBOutlet private weak var generalButton: NSButton!
     @IBOutlet private weak var menuButton: NSButton!
@@ -40,15 +38,13 @@ final class CPYPreferencesWindowController: NSWindowController {
     @IBOutlet private weak var excludeButton: NSButton!
     @IBOutlet private weak var shortcutsButton: NSButton!
     @IBOutlet private weak var updatesButton: NSButton!
-    @IBOutlet private weak var betaButton: NSButton!
     // ViewController
     private let viewController = [CPYGeneralPreferenceViewController(nibName: "CPYGeneralPreferenceViewController", bundle: nil),
                                   NSViewController(nibName: "CPYMenuPreferenceViewController", bundle: nil),
                                   CPYTypePreferenceViewController(nibName: "CPYTypePreferenceViewController", bundle: nil),
                                   CPYExcludeAppPreferenceViewController(nibName: "CPYExcludeAppPreferenceViewController", bundle: nil),
                                   CPYShortcutsPreferenceViewController(nibName: "CPYShortcutsPreferenceViewController", bundle: nil),
-                                  CPYUpdatesPreferenceViewController(nibName: "CPYUpdatesPreferenceViewController", bundle: nil),
-                                  CPYBetaPreferenceViewController(nibName: "CPYBetaPreferenceViewController", bundle: nil)]
+                                  CPYUpdatesPreferenceViewController(nibName: "CPYUpdatesPreferenceViewController", bundle: nil)]
 
     // MARK: - Window Life Cycle
     override func windowDidLoad() {
@@ -65,7 +61,6 @@ final class CPYPreferencesWindowController: NSWindowController {
         excludeButton.sendAction(on: .leftMouseDown)
         shortcutsButton.sendAction(on: .leftMouseDown)
         updatesButton.sendAction(on: .leftMouseDown)
-        betaButton.sendAction(on: .leftMouseDown)
     }
 
     override func showWindow(_ sender: Any?) {
@@ -105,7 +100,6 @@ private extension CPYPreferencesWindowController {
         excludeImageView.image = Asset.prefExcluded.image
         shortcutsImageView.image = Asset.prefShortcut.image
         updatesImageView.image = Asset.prefUpdate.image
-        betaImageView.image = Asset.prefBeta.image
 
         generalTextField.textColor = AppColors.tabTitle
         menuTextField.textColor = AppColors.tabTitle
@@ -113,7 +107,6 @@ private extension CPYPreferencesWindowController {
         excludeTextField.textColor = AppColors.tabTitle
         shortcutsTextField.textColor = AppColors.tabTitle
         updatesTextField.textColor = AppColors.tabTitle
-        betaTextField.textColor = AppColors.tabTitle
     }
 
     func selectedTab(_ index: Int) {
@@ -138,9 +131,6 @@ private extension CPYPreferencesWindowController {
         case 5:
             updatesImageView.image = Asset.prefUpdateOn.image
             updatesTextField.textColor = AppColors.clipy
-        case 6:
-            betaImageView.image = Asset.prefBetaOn.image
-            betaTextField.textColor = AppColors.clipy
         default: break
         }
     }

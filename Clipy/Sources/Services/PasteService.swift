@@ -18,81 +18,18 @@ final class PasteService {
 
     // MARK: - Properties
     fileprivate let lock = NSRecursiveLock(name: "com.clipy-app.Clipy.Pastable")
-    fileprivate var isPastePlainText: Bool {
-        guard AppEnvironment.current.defaults.bool(forKey: Constants.Beta.pastePlainText) else { return false }
-
-        let modifierSetting = AppEnvironment.current.defaults.integer(forKey: Constants.Beta.pastePlainTextModifier)
-        return isPressedModifier(modifierSetting)
-    }
-    fileprivate var isDeleteHistory: Bool {
-        guard AppEnvironment.current.defaults.bool(forKey: Constants.Beta.deleteHistory) else { return false }
-
-        let modifierSetting = AppEnvironment.current.defaults.integer(forKey: Constants.Beta.deleteHistoryModifier)
-        return isPressedModifier(modifierSetting)
-    }
-    fileprivate var isPasteAndDeleteHistory: Bool {
-        guard AppEnvironment.current.defaults.bool(forKey: Constants.Beta.pasteAndDeleteHistory) else { return false }
-
-        let modifierSetting = AppEnvironment.current.defaults.integer(forKey: Constants.Beta.pasteAndDeleteHistoryModifier)
-        return isPressedModifier(modifierSetting)
-    }
-
-    // MARK: - Modifiers
-    private func isPressedModifier(_ flag: Int) -> Bool {
-        let flags = NSEvent.modifierFlags
-        if flag == 0 && flags.contains(.command) {
-            return true
-        } else if flag == 1 && flags.contains(.shift) {
-            return true
-        } else if flag == 2 && flags.contains(.control) {
-            return true
-        } else if flag == 3 && flags.contains(.option) {
-            return true
-        }
-        return false
-    }
 }
 
 // MARK: - Copy
 extension PasteService {
     func paste(with clip: CPYClip) {
         guard !clip.isInvalidated else { return }
-        guard let data = NSKeyedUnarchiver.unarchiveObject(withFile: clip.dataPath) as? CPYClipData else { return }
 
-        // Handling modifier actions
-        let isPastePlainText = self.isPastePlainText
-        let isPasteAndDeleteHistory = self.isPasteAndDeleteHistory
-        let isDeleteHistory = self.isDeleteHistory
-        guard isPastePlainText || isPasteAndDeleteHistory || isDeleteHistory else {
-            AppEnvironment.current.clipService.incrementChangeCount()
-            copyToPasteboard(with: clip)
-            AppEnvironment.current.clipService.syncChangeCountToPasteboard()
-            AppEnvironment.current.clipService.markAsRecentlyUsed(clip)
-            paste()
-            return
-        }
-
-        // Increment change count for don't copy paste item
-        if isPasteAndDeleteHistory {
-            AppEnvironment.current.clipService.incrementChangeCount()
-        }
-        // Paste history
-        if isPastePlainText {
-            AppEnvironment.current.clipService.incrementChangeCount()
-            copyToPasteboard(with: data.stringValue)
-            AppEnvironment.current.clipService.syncChangeCountToPasteboard()
-            paste()
-        } else if isPasteAndDeleteHistory {
-            AppEnvironment.current.clipService.incrementChangeCount()
-            copyToPasteboard(with: clip)
-            AppEnvironment.current.clipService.syncChangeCountToPasteboard()
-            AppEnvironment.current.clipService.markAsRecentlyUsed(clip)
-            paste()
-        }
-        // Delete clip
-        if isDeleteHistory || isPasteAndDeleteHistory {
-            AppEnvironment.current.clipService.delete(with: clip)
-        }
+        AppEnvironment.current.clipService.incrementChangeCount()
+        copyToPasteboard(with: clip)
+        AppEnvironment.current.clipService.syncChangeCountToPasteboard()
+        AppEnvironment.current.clipService.markAsRecentlyUsed(clip)
+        paste()
     }
 
     func copyToPasteboard(with string: String) {
@@ -107,11 +44,6 @@ extension PasteService {
         lock.lock(); defer { lock.unlock() }
 
         guard let data = NSKeyedUnarchiver.unarchiveObject(withFile: clip.dataPath) as? CPYClipData else { return }
-
-        if isPastePlainText {
-            copyToPasteboard(with: data.stringValue)
-            return
-        }
 
         let pasteboard = NSPasteboard.general
         let types = data.types

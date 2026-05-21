@@ -16,8 +16,6 @@ import RxCocoa
 import RxSwift
 import LoginServiceKit
 import Magnet
-import Screeen
-import RxScreeen
 import RealmSwift
 import LetsMove
 
@@ -25,7 +23,6 @@ import LetsMove
 class AppDelegate: NSObject, NSMenuItemValidation {
 
     // MARK: - Properties
-    let screenshotObserver = ScreenShotObserver()
     let disposeBag = DisposeBag()
 
     // MARK: - Init
@@ -222,28 +219,6 @@ private extension AppDelegate {
             .compactMap { $0 }
             .subscribe(onNext: { [weak self] _ in
                 self?.reflectLoginItemState()
-            })
-            .disposed(by: disposeBag)
-        // Observe Screenshot
-        let observerScreenshot = AppEnvironment.current.defaults.rx.observe(Bool.self, Constants.Beta.observerScreenshot, retainSelf: false)
-            .compactMap { $0 }
-            .share(replay: 1)
-        observerScreenshot
-            .subscribe(onNext: { [weak self] enabled in
-                self?.screenshotObserver.isEnabled = enabled
-            })
-            .disposed(by: disposeBag)
-        observerScreenshot
-            .filter { $0 }
-            .take(1)
-            .subscribe(onNext: { [weak self] _ in
-                self?.screenshotObserver.start()
-            })
-            .disposed(by: disposeBag)
-        // Observe Screenshot image
-        screenshotObserver.rx.addedImage
-            .subscribe(onNext: { image in
-                AppEnvironment.current.clipService.create(with: image)
             })
             .disposed(by: disposeBag)
     }
