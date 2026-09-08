@@ -15,7 +15,7 @@ import RealmSwift
 
 extension Realm {
     static func migration() {
-        let config = Realm.Configuration(schemaVersion: 7, migrationBlock: { migration, oldSchemaVersion in
+        let config = Realm.Configuration(schemaVersion: 8, migrationBlock: { migration, oldSchemaVersion in
             if oldSchemaVersion <= 2 {
                 // Add identifier in CPYSnippet
                 migration.enumerateObjects(ofType: CPYSnippet.className()) { _, newObject in
@@ -55,6 +55,13 @@ extension Realm {
                         newObject!["identifier"] = oldObject!["identifier"]
                     }
                 })
+            }
+            if oldSchemaVersion <= 7 {
+                // Add copy source application info in CPYClip
+                migration.enumerateObjects(ofType: CPYClip.className()) { _, newObject in
+                    newObject!["sourceBundleIdentifier"] = ""
+                    newObject!["sourceAppName"] = ""
+                }
             }
         })
         Realm.Configuration.defaultConfiguration = config

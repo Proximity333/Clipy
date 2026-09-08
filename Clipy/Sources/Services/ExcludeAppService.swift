@@ -42,6 +42,10 @@ extension ExcludeAppService {
 
 // MARK: - Exclude
 extension ExcludeAppService {
+    var lastFrontApplication: NSRunningApplication? {
+        return frontApplication.value
+    }
+
     func frontProcessIsExcludedApplication() -> Bool {
         if applications.isEmpty { return false }
         guard let frontApplicationIdentifier = frontApplication.value?.bundleIdentifier else { return false }

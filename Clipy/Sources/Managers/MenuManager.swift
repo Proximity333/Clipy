@@ -816,7 +816,10 @@ extension MenuManager: SearchPopoverDelegate {
         case let .clip(clip):
             pasteService.paste(with: clip)
         case let .snippet(snippet):
+            let clipService = AppEnvironment.current.clipService
+            clipService.incrementChangeCount()
             pasteService.copyToPasteboard(with: snippet.content)
+            clipService.syncChangeCountToPasteboard()
             pasteService.paste()
         }
         let popover = searchPopoverController

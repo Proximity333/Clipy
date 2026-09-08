@@ -56,6 +56,9 @@ struct Constants {
         static let collectCrashReport = "kCPYCollectCrashReport"
         static let showColorPreviewInTheMenu = "kCPYPrefShowColorPreviewInTheMenu"
         static let appearance = "kCPYPrefAppearance"
+        static let searchWindowWidth = "kCPYSearchWindowWidth"
+        static let searchWindowHeight = "kCPYSearchWindowHeight"
+        static let searchListWidth = "kCPYSearchListWidth"
     }
 
     struct Update {

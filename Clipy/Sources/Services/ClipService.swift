@@ -118,7 +118,22 @@ extension ClipService {
 
         // Create data
         let data = CPYClipData(pasteboard: pasteboard, types: types)
-        return save(with: data)
+        return save(with: data, sourceApplication: copySourceApplication())
+    }
+
+    /// 复制发生时的前台应用即为内容来源。Clipy 自身窗口（如片段编辑器）处于前台时，
+    /// 回退到 ExcludeAppService 跟踪到的上一个前台应用，避免把来源记成 Clipy 自己。
+    fileprivate func copySourceApplication() -> NSRunningApplication? {
+        let ownBundleIdentifier = Bundle.main.bundleIdentifier
+        if let frontApplication = NSWorkspace.shared.frontmostApplication,
+           frontApplication.bundleIdentifier != ownBundleIdentifier {
+            return frontApplication
+        }
+        if let lastApplication = AppEnvironment.current.excludeAppService.lastFrontApplication,
+           lastApplication.bundleIdentifier != ownBundleIdentifier {
+            return lastApplication
+        }
+        return nil
     }
 
     func create(with image: NSImage) {
@@ -129,7 +144,7 @@ extension ClipService {
         _ = save(with: data)
     }
 
-    fileprivate func save(with data: CPYClipData) -> Bool {
+    fileprivate func save(with data: CPYClipData, sourceApplication: NSRunningApplication? = nil) -> Bool {
         if !data.hasMeaningfulContent { return false }
 
         let realm = try! Realm()
@@ -156,6 +171,10 @@ extension ClipService {
         clip.dataHash = "\(savedHash)"
         clip.updateTime = unixTime
         clip.primaryType = data.primaryType?.rawValue ?? ""
+        if let sourceApplication = sourceApplication {
+            clip.sourceBundleIdentifier = sourceApplication.bundleIdentifier ?? ""
+            clip.sourceAppName = sourceApplication.localizedName ?? ""
+        }
 
         // Save thumbnail image before Realm commit so menu refresh sees a complete record.
         if let thumbnailImage = data.thumbnailImage {

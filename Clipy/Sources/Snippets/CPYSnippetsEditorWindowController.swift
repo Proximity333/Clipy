@@ -64,6 +64,8 @@ final class CPYSnippetsEditorWindowController: NSWindowController {
         super.windowDidLoad()
         self.window?.collectionBehavior = NSWindow.CollectionBehavior.canJoinAllSpaces
         self.window?.backgroundColor = AppColors.windowBackground
+        splitView.autosaveName = NSSplitView.AutosaveName("CPYSnippetsEditorSplitView")
+        window?.setFrameAutosaveName(NSWindow.FrameAutosaveName("CPYSnippetsEditorWindow"))
         if #available(OSX 10.10, *) {
             self.window?.titlebarAppearsTransparent = true
         }
