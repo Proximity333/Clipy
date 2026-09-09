@@ -16,21 +16,21 @@ protocol SearchTextFieldDelegate: AnyObject {
 }
 
 final class SearchTextField: NSTextField {
-    
+
     // MARK: - Properties
     weak var searchDelegate: SearchTextFieldDelegate?
-    
+
     // MARK: - Initialization
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         setup()
     }
-    
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setup()
     }
-    
+
     // MARK: - Setup
     private func setup() {
         placeholderString = "搜索粘贴历史..."
@@ -45,11 +45,11 @@ final class SearchTextField: NSTextField {
         // Allow input method
         allowsEditingTextAttributes = false
     }
-    
+
     // MARK: - Key Event Handling
     override func keyDown(with event: NSEvent) {
         let keyCode = event.keyCode
-        
+
         switch keyCode {
         case 53: // Escape
             searchDelegate?.searchTextFieldDidReceiveEscape(self)

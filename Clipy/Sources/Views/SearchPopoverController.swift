@@ -20,20 +20,19 @@ final class SearchPopoverController: NSViewController {
     enum FilterTab: Int, CaseIterable {
         case all
         case history
-        case snippets
+        case favorites
 
         var title: String {
             switch self {
             case .all: return "全部"
             case .history: return "粘贴历史"
-            case .snippets: return "片段"
+            case .favorites: return "收藏"
             }
         }
     }
 
     enum ResultItem {
         case clip(CPYClip)
-        case snippet(CPYSnippet)
     }
 
     private struct SearchPalette {
@@ -47,7 +46,6 @@ final class SearchPopoverController: NSViewController {
     weak var delegate: SearchPopoverDelegate?
 
     private var clips: [CPYClip]
-    private let snippets: [CPYSnippet]
     private var filteredResults: [ResultItem]
     private var activeTab: FilterTab = .all
     private var searchWindow: SearchWindow?
@@ -93,6 +91,7 @@ final class SearchPopoverController: NSViewController {
     private var previewTextBottomConstraint: NSLayoutConstraint?
 
     private let deleteButton = NSButton()
+    private let favoriteButton = NSButton()
 
     private let sourceKeyLabel = NSTextField(labelWithString: "来源")
     private let sourceValueLabel = NSTextField(labelWithString: "-")
@@ -107,9 +106,7 @@ final class SearchPopoverController: NSViewController {
     // MARK: - Initialization
     init(clips: [CPYClip]) {
         self.clips = clips
-        let realm = try! Realm()
-        self.snippets = Array(realm.objects(CPYSnippet.self).filter("enable == true").sorted(byKeyPath: #keyPath(CPYSnippet.index), ascending: true))
-        self.filteredResults = clips.map(ResultItem.clip) + self.snippets.map(ResultItem.snippet)
+        self.filteredResults = clips.map(ResultItem.clip)
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -333,6 +330,21 @@ final class SearchPopoverController: NSViewController {
         deleteButton.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(deleteButton)
 
+        favoriteButton.bezelStyle = .texturedRounded
+        favoriteButton.isBordered = false
+        if #available(macOS 11.0, *) {
+            favoriteButton.image = NSImage(systemSymbolName: "star", accessibilityDescription: "收藏")
+        } else {
+            favoriteButton.image = NSImage(named: NSImage.Name("NSActionTemplate"))
+        }
+        favoriteButton.imagePosition = .imageOnly
+        favoriteButton.target = self
+        favoriteButton.action = #selector(toggleFavorite)
+        favoriteButton.isHidden = true
+        favoriteButton.toolTip = "收藏/取消收藏"
+        favoriteButton.translatesAutoresizingMaskIntoConstraints = false
+        headerView.addSubview(favoriteButton)
+
         previewTextView.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
         previewTextView.textColor = .labelColor
         previewTextView.isEditable = false
@@ -410,7 +422,18 @@ final class SearchPopoverController: NSViewController {
     }
 
     private func setupConstraints() {
-        NSLayoutConstraint.activate([
+        NSLayoutConstraint.activate(
+            chromeConstraints()
+                + searchBarConstraints()
+                + contentPanelConstraints()
+                + listPanelConstraints()
+                + previewPanelConstraints()
+                + metaPanelConstraints()
+        )
+    }
+
+    private func chromeConstraints() -> [NSLayoutConstraint] {
+        [
             chromeView.topAnchor.constraint(equalTo: view.topAnchor),
             chromeView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             chromeView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -420,8 +443,12 @@ final class SearchPopoverController: NSViewController {
             dragBar.topAnchor.constraint(equalTo: chromeView.topAnchor),
             dragBar.leadingAnchor.constraint(equalTo: chromeView.leadingAnchor),
             dragBar.trailingAnchor.constraint(equalTo: chromeView.trailingAnchor),
-            dragBar.heightAnchor.constraint(equalToConstant: 18),
+            dragBar.heightAnchor.constraint(equalToConstant: 18)
+        ]
+    }
 
+    private func searchBarConstraints() -> [NSLayoutConstraint] {
+        [
             searchContainer.topAnchor.constraint(equalTo: dragBar.bottomAnchor),
             searchContainer.leadingAnchor.constraint(equalTo: chromeView.leadingAnchor, constant: 14),
             searchContainer.trailingAnchor.constraint(equalTo: chromeView.trailingAnchor, constant: -14),
@@ -448,8 +475,12 @@ final class SearchPopoverController: NSViewController {
             resetLayoutButton.trailingAnchor.constraint(equalTo: searchContainer.trailingAnchor, constant: -10),
             resetLayoutButton.centerYAnchor.constraint(equalTo: searchContainer.centerYAnchor),
             resetLayoutButton.widthAnchor.constraint(equalToConstant: 24),
-            resetLayoutButton.heightAnchor.constraint(equalToConstant: 24),
+            resetLayoutButton.heightAnchor.constraint(equalToConstant: 24)
+        ]
+    }
 
+    private func contentPanelConstraints() -> [NSLayoutConstraint] {
+        [
             contentContainer.topAnchor.constraint(equalTo: searchContainer.bottomAnchor, constant: 12),
             contentContainer.leadingAnchor.constraint(equalTo: chromeView.leadingAnchor, constant: 14),
             contentContainer.trailingAnchor.constraint(equalTo: chromeView.trailingAnchor, constant: -14),
@@ -462,9 +493,9 @@ final class SearchPopoverController: NSViewController {
                 let saved = AppEnvironment.current.defaults.double(forKey: Constants.UserDefaults.searchListWidth)
                 let initial = (saved >= 160 && saved <= 480) ? CGFloat(saved) : Self.defaultListWidth
                 splitDividerLocation = initial
-                let c = listContainer.widthAnchor.constraint(equalToConstant: initial)
-                self.listWidthConstraint = c
-                return c
+                let listWidth = listContainer.widthAnchor.constraint(equalToConstant: initial)
+                self.listWidthConstraint = listWidth
+                return listWidth
             }(),
 
             // Divider sits between the panels and provides their separation.
@@ -484,8 +515,12 @@ final class SearchPopoverController: NSViewController {
             metaContainer.leadingAnchor.constraint(equalTo: previewContainer.leadingAnchor),
             metaContainer.trailingAnchor.constraint(equalTo: previewContainer.trailingAnchor),
             metaContainer.heightAnchor.constraint(equalToConstant: 52),
-            metaContainer.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor),
+            metaContainer.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor)
+        ]
+    }
 
+    private func listPanelConstraints() -> [NSLayoutConstraint] {
+        [
             listTitleLabel.topAnchor.constraint(equalTo: listContainer.topAnchor, constant: 10),
             listTitleLabel.leadingAnchor.constraint(equalTo: listContainer.leadingAnchor, constant: 16),
             listTitleLabel.trailingAnchor.constraint(lessThanOrEqualTo: listActionButton.leadingAnchor, constant: -8),
@@ -499,8 +534,12 @@ final class SearchPopoverController: NSViewController {
             scrollView.bottomAnchor.constraint(equalTo: listContainer.bottomAnchor, constant: -8),
 
             emptyStateLabel.centerXAnchor.constraint(equalTo: listContainer.centerXAnchor),
-            emptyStateLabel.centerYAnchor.constraint(equalTo: listContainer.centerYAnchor),
+            emptyStateLabel.centerYAnchor.constraint(equalTo: listContainer.centerYAnchor)
+        ]
+    }
 
+    private func previewPanelConstraints() -> [NSLayoutConstraint] {
+        [
             // Header view (title + delete button)
             {
                 let headerView = previewTitleLabel.superview!
@@ -527,27 +566,32 @@ final class SearchPopoverController: NSViewController {
             deleteButton.widthAnchor.constraint(equalToConstant: 20),
             deleteButton.heightAnchor.constraint(equalToConstant: 20),
 
+            favoriteButton.trailingAnchor.constraint(equalTo: deleteButton.leadingAnchor, constant: -8),
+            favoriteButton.centerYAnchor.constraint(equalTo: favoriteButton.superview!.centerYAnchor),
+            favoriteButton.widthAnchor.constraint(equalToConstant: 20),
+            favoriteButton.heightAnchor.constraint(equalToConstant: 20),
+
             previewImageView.topAnchor.constraint(equalTo: previewTitleLabel.superview!.bottomAnchor, constant: 8),
             previewImageView.leadingAnchor.constraint(equalTo: previewContainer.leadingAnchor, constant: 12),
             previewImageView.trailingAnchor.constraint(equalTo: previewContainer.trailingAnchor, constant: -12),
             {
-                let c = previewImageView.heightAnchor.constraint(equalToConstant: 140)
-                c.priority = .defaultHigh
-                self.previewImageFixedHeightConstraint = c
-                return c
+                let fixedHeight = previewImageView.heightAnchor.constraint(equalToConstant: 140)
+                fixedHeight.priority = .defaultHigh
+                self.previewImageFixedHeightConstraint = fixedHeight
+                return fixedHeight
             }(),
             {
-                let c = previewImageView.bottomAnchor.constraint(equalTo: previewContainer.bottomAnchor, constant: -10)
-                c.priority = .defaultHigh
-                c.isActive = true
-                self.previewImageBottomConstraint = c
-                return c
+                let pinnedBottom = previewImageView.bottomAnchor.constraint(equalTo: previewContainer.bottomAnchor, constant: -10)
+                pinnedBottom.priority = .defaultHigh
+                pinnedBottom.isActive = true
+                self.previewImageBottomConstraint = pinnedBottom
+                return pinnedBottom
             }(),
             {
-                let c = previewImageView.heightAnchor.constraint(equalToConstant: 0)
-                c.priority = .defaultHigh
-                self.previewImageZeroHeightConstraint = c
-                return c
+                let zeroHeight = previewImageView.heightAnchor.constraint(equalToConstant: 0)
+                zeroHeight.priority = .defaultHigh
+                self.previewImageZeroHeightConstraint = zeroHeight
+                return zeroHeight
             }(),
 
             {
@@ -565,8 +609,12 @@ final class SearchPopoverController: NSViewController {
 
             previewSubtitleLabel.leadingAnchor.constraint(equalTo: previewContainer.leadingAnchor, constant: 14),
             previewSubtitleLabel.trailingAnchor.constraint(equalTo: previewContainer.trailingAnchor, constant: -14),
-            previewSubtitleLabel.bottomAnchor.constraint(equalTo: previewContainer.bottomAnchor, constant: -10),
+            previewSubtitleLabel.bottomAnchor.constraint(equalTo: previewContainer.bottomAnchor, constant: -10)
+        ]
+    }
 
+    private func metaPanelConstraints() -> [NSLayoutConstraint] {
+        [
             // Meta view: source (key on top, icon+value below) → type → size → quit
             sourceIconView.leadingAnchor.constraint(equalTo: metaContainer.leadingAnchor, constant: 14),
             sourceIconView.topAnchor.constraint(equalTo: sourceValueLabel.topAnchor),
@@ -592,7 +640,7 @@ final class SearchPopoverController: NSViewController {
             quitButton.trailingAnchor.constraint(equalTo: metaContainer.trailingAnchor, constant: -12),
             quitButton.widthAnchor.constraint(equalToConstant: 20),
             quitButton.heightAnchor.constraint(equalToConstant: 20)
-        ])
+        ]
     }
 
     // MARK: - Public Methods
@@ -787,17 +835,17 @@ final class SearchPopoverController: NSViewController {
         let historyResults = clips
             .filter { matches($0.title) }
             .map(ResultItem.clip)
-        let snippetResults = snippets
-            .filter { matches($0.title) || matches($0.content) }
-            .map(ResultItem.snippet)
 
         switch tab {
         case .all:
-            return historyResults + snippetResults
+            return historyResults
         case .history:
             return historyResults
-        case .snippets:
-            return snippetResults
+        case .favorites:
+            return historyResults.filter {
+                if case let .clip(clip) = $0 { return clip.isFavorite }
+                return false
+            }
         }
     }
 
@@ -808,7 +856,6 @@ final class SearchPopoverController: NSViewController {
     private func resultIdentifier(for result: ResultItem) -> String {
         switch result {
         case let .clip(clip): return "clip:\(clip.dataHash)"
-        case let .snippet(snippet): return "snippet:\(snippet.identifier)"
         }
     }
 
@@ -840,16 +887,45 @@ final class SearchPopoverController: NSViewController {
             sourceIconView.image = nil
             sourceValueLabel.stringValue = "-"
             deleteButton.isHidden = true
+            favoriteButton.isHidden = true
             return
         }
 
         deleteButton.isHidden = false
+        favoriteButton.isHidden = false
 
         switch result {
         case let .clip(clip):
+            updateFavoriteButton(isFavorite: clip.isFavorite)
             renderClipPreview(for: clip, data: loadClipData(for: clip))
-        case let .snippet(snippet):
-            renderSnippetPreview(for: snippet)
+        }
+    }
+
+    private func updateFavoriteButton(isFavorite: Bool) {
+        if #available(macOS 11.0, *) {
+            favoriteButton.image = NSImage(
+                systemSymbolName: isFavorite ? "star.fill" : "star",
+                accessibilityDescription: "收藏"
+            )
+            favoriteButton.contentTintColor = isFavorite ? .systemYellow : .secondaryLabelColor
+        }
+    }
+
+    @objc private func toggleFavorite() {
+        guard case let .clip(clip)? = selectedResult() else { return }
+        let dataHash = clip.dataHash
+        let realm = try! Realm()
+        guard let savedClip = realm.object(ofType: CPYClip.self, forPrimaryKey: dataHash) else { return }
+        let newValue = !savedClip.isFavorite
+        realm.transaction { savedClip.isFavorite = newValue }
+        // The in-memory clips are live objects owned by another Realm instance,
+        // so they cannot be written here. Advance them instead.
+        if let index = clips.firstIndex(where: { $0.dataHash == dataHash }) {
+            clips[index].realm?.refresh()
+        }
+        updateFavoriteButton(isFavorite: newValue)
+        if activeTab == .favorites {
+            filter(with: searchField.stringValue)
         }
     }
 
@@ -889,26 +965,6 @@ final class SearchPopoverController: NSViewController {
 
         sourceIconView.image = appIcon(for: clip.sourceBundleIdentifier)
         sourceValueLabel.stringValue = clip.sourceAppName.isEmpty ? "本应用" : clip.sourceAppName
-    }
-
-    private func renderSnippetPreview(for snippet: CPYSnippet) {
-        previewImageView.image = nil
-        previewImageView.isHidden = true
-        previewImageFixedHeightConstraint?.isActive = false
-        previewImageBottomConstraint?.isActive = false
-        previewImageZeroHeightConstraint?.isActive = true
-        previewTextScrollView.isHidden = false
-        previewTextView.string = snippet.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "空片段" : snippet.content
-        previewTextScrollView.contentView.scroll(to: .zero)
-        previewTextScrollView.reflectScrolledClipView(previewTextScrollView.contentView)
-        previewTextTopConstraint?.constant = 8
-        previewTextBottomConstraint?.constant = -10
-        previewSubtitleLabel.stringValue = snippet.folder?.title ?? ""
-        previewSubtitleLabel.isHidden = previewSubtitleLabel.stringValue.isEmpty
-        typeValueLabel.stringValue = "片段"
-        sizeValueLabel.stringValue = "\(snippet.content.count) 字符"
-        sourceIconView.image = appIcon(for: Bundle.main.bundleIdentifier ?? "")
-        sourceValueLabel.stringValue = "本应用"
     }
 
     private func previewImage(for clip: CPYClip, data: CPYClipData) -> NSImage? {
@@ -1093,7 +1149,7 @@ final class SearchPopoverController: NSViewController {
         switch result {
         case let .clip(clip):
             let index = filteredResults.firstIndex(where: {
-                if case .clip(let c) = $0 { return c.dataHash == clip.dataHash }
+                if case .clip(let candidate) = $0 { return candidate.dataHash == clip.dataHash }
                 return false
             })
             if let index {
@@ -1109,8 +1165,6 @@ final class SearchPopoverController: NSViewController {
                 let selectIndex = min(index, filteredResults.count - 1)
                 tableView.selectRowIndexes(IndexSet(integer: selectIndex), byExtendingSelection: false)
             }
-        case .snippet:
-            break
         }
     }
 
@@ -1127,9 +1181,8 @@ final class SearchPopoverController: NSViewController {
         case .history:
             listActionButton.title = "清空"
             listActionButton.isHidden = false
-        case .snippets:
-            listActionButton.title = "编辑"
-            listActionButton.isHidden = false
+        case .favorites:
+            listActionButton.isHidden = true
         case .all:
             listActionButton.isHidden = true
         }
@@ -1144,13 +1197,8 @@ final class SearchPopoverController: NSViewController {
             if let appDelegate = NSApp.delegate as? AppDelegate {
                 appDelegate.clearAllHistory()
             }
-        case .snippets:
-            delegate?.searchPopoverDidCancel()
-            close()
-            NSApp.activate(ignoringOtherApps: true)
-            if let appDelegate = NSApp.delegate as? AppDelegate {
-                appDelegate.showSnippetEditorWindow()
-            }
+        case .favorites:
+            break
         case .all:
             break
         }
@@ -1243,10 +1291,6 @@ extension SearchPopoverController: NSTableViewDelegate {
             let rawTitle = data?.titleText ?? clip.title
             title = rawTitle.replacingOccurrences(of: "\n", with: " ").trimmingCharacters(in: .whitespacesAndNewlines)
             image = previewImage(for: clip, data: data ?? CPYClipData(image: NSImage(size: .zero)))
-        case let .snippet(snippet):
-            let rawTitle = snippet.title.isEmpty ? snippet.content : snippet.title
-            title = rawTitle.replacingOccurrences(of: "\n", with: " ").trimmingCharacters(in: .whitespacesAndNewlines)
-            image = nil
         }
         cell.configure(title: title, image: image)
 
@@ -1292,7 +1336,6 @@ private final class SplitDividerView: NSView {
     private var initialMouseX: CGFloat = 0
     private var initialLeading: CGFloat = 0
     private var initialWindowSize: NSSize?
-
 
     override var acceptsFirstResponder: Bool { false }
     override var isFlipped: Bool { true }
@@ -1426,13 +1469,13 @@ private final class SearchWindow: NSWindow {
         // overriding it here would make the resize cursor flicker away.
         if isInSplitDivider(loc) { return }
 
-        let w = frame.size.width
-        let h = frame.size.height
+        let width = frame.size.width
+        let height = frame.size.height
         let edge = resizeEdgeSize
         let nearLeft = loc.x <= edge
-        let nearRight = loc.x >= w - edge
+        let nearRight = loc.x >= width - edge
         let nearBottom = loc.y <= edge
-        let nearTop = loc.y >= h - edge
+        let nearTop = loc.y >= height - edge
         if (nearLeft || nearRight) && (nearTop || nearBottom) {
             NSCursor.crosshair.set()
         } else if nearLeft || nearRight {
@@ -1470,13 +1513,13 @@ private final class SearchWindow: NSWindow {
         switch event.type {
         case .leftMouseDown:
             let loc = event.locationInWindow
-            let w = frame.size.width
-            let h = frame.size.height
+            let width = frame.size.width
+            let height = frame.size.height
             let edge = resizeEdgeSize
             let nearLeft = loc.x <= edge
-            let nearRight = loc.x >= w - edge
+            let nearRight = loc.x >= width - edge
             let nearBottom = loc.y <= edge
-            let nearTop = loc.y >= h - edge
+            let nearTop = loc.y >= height - edge
 
             // The divider can sit within 6pt of the window edge, so it must be
             // checked first; otherwise grabbing it resizes the whole window.
@@ -1592,7 +1635,7 @@ private final class SearchWindow: NSWindow {
 }
 
 private final class ThinScroller: NSScroller {
-    override class func scrollerWidth(for controlSize: NSControl.ControlSize, scrollerStyle: NSScroller.Style) -> CGFloat {
+    override static func scrollerWidth(for controlSize: NSControl.ControlSize, scrollerStyle: NSScroller.Style) -> CGFloat {
         16
     }
 

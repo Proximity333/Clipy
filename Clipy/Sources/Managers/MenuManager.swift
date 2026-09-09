@@ -16,6 +16,7 @@ import RealmSwift
 import RxCocoa
 import RxSwift
 
+// swiftlint:disable file_length
 final class MenuManager: NSObject {
 
     // MARK: - Properties
@@ -23,21 +24,17 @@ final class MenuManager: NSObject {
     fileprivate var clipMenu: NSMenu?
     fileprivate var statusMenu: NSMenu?
     fileprivate var historyMenu: NSMenu?
-    fileprivate var snippetMenu: NSMenu?
     // StatusMenu
     fileprivate var statusItem: NSStatusItem?
     // Icon Cache
     fileprivate let folderIcon = Asset.iconFolder.image
-    fileprivate let snippetIcon = Asset.iconText.image
     // Other
     fileprivate let disposeBag = DisposeBag()
-    fileprivate let notificationCenter = NotificationCenter.default
     fileprivate let kMaxKeyEquivalents = 10
     fileprivate let shortenSymbol = "..."
     // Realm
     fileprivate let realm = try! Realm()
     fileprivate var clipToken: NotificationToken?
-    fileprivate var snippetToken: NotificationToken?
     fileprivate var clipPreviewTextByItem = [ObjectIdentifier: String]()
     fileprivate let previewWindowController = MenuTooltipWindowController()
     // Search
@@ -59,8 +56,6 @@ final class MenuManager: NSObject {
         super.init()
         folderIcon.isTemplate = true
         folderIcon.size = NSSize(width: 15, height: 13)
-        snippetIcon.isTemplate = true
-        snippetIcon.size = NSSize(width: 12, height: 13)
     }
 
     func setup() {
@@ -88,8 +83,6 @@ extension MenuManager {
             menu = clipMenu
         case .history:
             menu = historyMenu
-        case .snippet:
-            menu = snippetMenu
         }
         menu?.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
     }
@@ -137,22 +130,6 @@ extension MenuManager {
         }
     }
 
-    func popUpSnippetFolder(_ folder: CPYFolder) {
-        let folderMenu = NSMenu(title: folder.title)
-        // Folder title
-        let labelItem = NSMenuItem(title: folder.title, action: nil)
-        labelItem.isEnabled = false
-        folderMenu.addItem(labelItem)
-        // Snippets
-        folder.snippets
-            .sorted(byKeyPath: #keyPath(CPYSnippet.index), ascending: true)
-            .filter { $0.enable }
-            .forEach { snippet in
-                let subMenuItem = makeSnippetMenuItem(snippet)
-                folderMenu.addItem(subMenuItem)
-            }
-        folderMenu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
-    }
 }
 
 // MARK: - Binding
@@ -160,12 +137,6 @@ private extension MenuManager {
     func bind() {
         // Realm Notification
         clipToken = realm.objects(CPYClip.self)
-                        .observe { [weak self] _ in
-                            DispatchQueue.main.async { [weak self] in
-                                self?.createClipMenu()
-                            }
-                        }
-        snippetToken = realm.objects(CPYFolder.self)
                         .observe { [weak self] _ in
                             DispatchQueue.main.async { [weak self] in
                                 self?.createClipMenu()
@@ -186,13 +157,6 @@ private extension MenuManager {
             .drive(onNext: { [weak self] _ in
                 guard let wSelf = self else { return }
                 wSelf.createClipMenu()
-            })
-            .disposed(by: disposeBag)
-        // Edit snippets
-        notificationCenter.rx.notification(Notification.Name(rawValue: Constants.Notification.closeSnippetEditor))
-            .asDriver(onErrorDriveWith: .empty())
-            .drive(onNext: { [weak self] _ in
-                self?.createClipMenu()
             })
             .disposed(by: disposeBag)
         // Observe change preference settings
@@ -223,7 +187,6 @@ private extension MenuManager {
         clipMenu = NSMenu(title: Constants.Application.name)
         statusMenu = NSMenu(title: Constants.Application.name)
         historyMenu = NSMenu(title: Constants.Menu.history)
-        snippetMenu = NSMenu(title: Constants.Menu.snippet)
 
         clipMenu?.delegate = self
         historyMenu?.delegate = self
@@ -234,16 +197,13 @@ private extension MenuManager {
         searchItem.target = self
         clipMenu?.addItem(searchItem)
         clipMenu?.addItem(NSMenuItem.separator())
-        
+
         // Cache all clips for searching
         cacheAllClips()
-        
+
         // Add history items with filtering support
         addHistoryItems(clipMenu!, clips: isSearching ? filteredClips : allClips)
         addHistoryItems(historyMenu!, clips: isSearching ? filteredClips : allClips)
-
-        addSnippetItems(clipMenu!, separateMenu: true)
-        addSnippetItems(snippetMenu!, separateMenu: false)
 
         if AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.addClearHistoryMenuItem) {
             clipMenu?.addItem(NSMenuItem.separator())
@@ -259,12 +219,10 @@ private extension MenuManager {
         clipMenu?.addItem(NSMenuItem.separator())
         statusMenu?.addItem(NSMenuItem.separator())
 
-        clipMenu?.addItem(NSMenuItem(title: L10n.editSnippets, action: #selector(AppDelegate.showSnippetEditorWindow)))
         clipMenu?.addItem(NSMenuItem(title: L10n.preferences, action: #selector(AppDelegate.showPreferenceWindow)))
         clipMenu?.addItem(NSMenuItem.separator())
         clipMenu?.addItem(NSMenuItem(title: L10n.quitClipy, action: #selector(AppDelegate.terminate)))
 
-        statusMenu?.addItem(NSMenuItem(title: L10n.editSnippets, action: #selector(AppDelegate.showSnippetEditorWindow)))
         statusMenu?.addItem(NSMenuItem(title: L10n.preferences, action: #selector(AppDelegate.showPreferenceWindow)))
         statusMenu?.addItem(NSMenuItem.separator())
         statusMenu?.addItem(NSMenuItem(title: L10n.quitClipy, action: #selector(AppDelegate.terminate)))
@@ -431,91 +389,42 @@ private extension MenuManager {
     }
 }
 
-// MARK: - Snippets
-private extension MenuManager {
-    func addSnippetItems(_ menu: NSMenu, separateMenu: Bool) {
-        let folderResults = realm.objects(CPYFolder.self).sorted(byKeyPath: #keyPath(CPYFolder.index), ascending: true)
-        guard !folderResults.isEmpty else { return }
-        if separateMenu {
-            menu.addItem(NSMenuItem.separator())
-        }
-
-        // Snippet title
-        let labelItem = NSMenuItem(title: L10n.snippet, action: nil)
-        labelItem.isEnabled = false
-        menu.addItem(labelItem)
-
-        var subMenuIndex = menu.numberOfItems - 1
-
-        folderResults
-            .filter { $0.enable }
-            .forEach { folder in
-                let folderTitle = folder.title
-                let subMenuItem = makeSubmenuItem(folderTitle)
-                menu.addItem(subMenuItem)
-                subMenuIndex += 1
-
-                folder.snippets
-                    .sorted(byKeyPath: #keyPath(CPYSnippet.index), ascending: true)
-                    .filter { $0.enable }
-                    .forEach { snippet in
-                        let subMenuItem = makeSnippetMenuItem(snippet)
-                        if let subMenu = menu.item(at: subMenuIndex)?.submenu {
-                            subMenu.addItem(subMenuItem)
-                        }
-                    }
-            }
-    }
-
-    func makeSnippetMenuItem(_ snippet: CPYSnippet) -> NSMenuItem {
-        let title = trimTitle(snippet.title)
-        let titleWithMark = menuItemTitle(title)
-
-        let menuItem = NSMenuItem(title: titleWithMark, action: #selector(AppDelegate.selectSnippetMenuItem(_:)), keyEquivalent: "")
-        menuItem.representedObject = snippet.identifier
-        menuItem.toolTip = nil
-        menuItem.image = snippetIcon
-
-        return menuItem
-    }
-}
-
 // MARK: - Search
 private extension MenuManager {
     func cacheAllClips() {
         let ascending = !AppEnvironment.current.defaults.bool(forKey: Constants.UserDefaults.reorderClipsAfterPasting)
         allClips = Array(realm.objects(CPYClip.self)
             .sorted(byKeyPath: #keyPath(CPYClip.updateTime), ascending: ascending))
-        
+
         if isSearching {
             filterClips(with: searchFieldView?.searchTextField.stringValue ?? "")
         } else {
             filteredClips = allClips
         }
     }
-    
+
     func addSearchMenuItem(to menu: NSMenu) {
         let searchItem = NSMenuItem()
         let menuWidth = estimatedMenuWidth(for: menu)
-        
+
         // Container view with padding
         let containerView = NSView(frame: NSRect(x: 0, y: 0, width: menuWidth, height: 36))
         containerView.autoresizingMask = [.width]
-        
+
         // Search field view
         searchFieldView = SearchFieldView(frame: NSRect(x: 16, y: 4, width: menuWidth - 32, height: 28))
         searchFieldView?.autoresizingMask = [.width]
         searchFieldView?.searchTextField.searchDelegate = self
-        
+
         if let searchFieldView = searchFieldView {
             containerView.addSubview(searchFieldView)
         }
-        
+
         searchItem.view = containerView
         menu.addItem(searchItem)
         searchMenuItem = searchItem
     }
-    
+
     func filterClips(with searchText: String) {
         if searchText.isEmpty {
             filteredClips = allClips
@@ -527,47 +436,47 @@ private extension MenuManager {
             isSearching = true
         }
     }
-    
+
     func highlightNextMenuItem() {
         let menu = clipMenu
         let items = menu?.items.filter { $0.isEnabled && !$0.isSeparatorItem && $0.view == nil } ?? []
-        
+
         highlightedMenuItemIndex = min(highlightedMenuItemIndex + 1, items.count - 1)
         if highlightedMenuItemIndex >= 0 && highlightedMenuItemIndex < items.count {
             // Simulate down arrow key event to highlight next menu item
             let event = NSEvent.keyEvent(with: .keyDown,
-                                        location: NSPoint.zero,
-                                        modifierFlags: [],
-                                        timestamp: 0,
-                                        windowNumber: 0,
-                                        context: nil,
-                                        characters: "",
-                                        charactersIgnoringModifiers: "",
-                                        isARepeat: false,
-                                        keyCode: 125) // Down arrow key code
+                                         location: NSPoint.zero,
+                                         modifierFlags: [],
+                                         timestamp: 0,
+                                         windowNumber: 0,
+                                         context: nil,
+                                         characters: "",
+                                         charactersIgnoringModifiers: "",
+                                         isARepeat: false,
+                                         keyCode: 125) // Down arrow key code
             if let event = event {
                 menu?.performKeyEquivalent(with: event)
             }
         }
     }
-    
+
     func highlightPreviousMenuItem() {
         let menu = clipMenu
         let items = menu?.items.filter { $0.isEnabled && !$0.isSeparatorItem && $0.view == nil } ?? []
-        
+
         highlightedMenuItemIndex = max(highlightedMenuItemIndex - 1, 0)
         if highlightedMenuItemIndex >= 0 && highlightedMenuItemIndex < items.count {
             // Simulate up arrow key event to highlight previous menu item
             let event = NSEvent.keyEvent(with: .keyDown,
-                                        location: NSPoint.zero,
-                                        modifierFlags: [],
-                                        timestamp: 0,
-                                        windowNumber: 0,
-                                        context: nil,
-                                        characters: "",
-                                        charactersIgnoringModifiers: "",
-                                        isARepeat: false,
-                                        keyCode: 126) // Up arrow key code
+                                         location: NSPoint.zero,
+                                         modifierFlags: [],
+                                         timestamp: 0,
+                                         windowNumber: 0,
+                                         context: nil,
+                                         characters: "",
+                                         charactersIgnoringModifiers: "",
+                                         isARepeat: false,
+                                         keyCode: 126) // Up arrow key code
             if let event = event {
                 menu?.performKeyEquivalent(with: event)
             }
@@ -774,12 +683,12 @@ extension MenuManager: SearchTextFieldDelegate {
         highlightedMenuItemIndex = -1
         createClipMenu()
     }
-    
+
     func searchTextFieldDidReceiveEnter(_ textField: SearchTextField) {
         if !filteredClips.isEmpty {
             let menu = clipMenu
             let items = menu?.items.filter { $0.isEnabled && !$0.isSeparatorItem && $0.view == nil } ?? []
-            
+
             if highlightedMenuItemIndex >= 0 && highlightedMenuItemIndex < items.count {
                 let menuItem = items[highlightedMenuItemIndex]
                 if let action = menuItem.action, let target = menuItem.target {
@@ -791,17 +700,17 @@ extension MenuManager: SearchTextFieldDelegate {
                 pasteService.paste(with: firstClip)
             }
         }
-        
+
         isSearching = false
         textField.stringValue = ""
         highlightedMenuItemIndex = -1
         createClipMenu()
     }
-    
+
     func searchTextFieldDidReceiveUpArrow(_ textField: SearchTextField) {
         highlightPreviousMenuItem()
     }
-    
+
     func searchTextFieldDidReceiveDownArrow(_ textField: SearchTextField) {
         highlightNextMenuItem()
     }
@@ -815,12 +724,6 @@ extension MenuManager: SearchPopoverDelegate {
         switch result {
         case let .clip(clip):
             pasteService.paste(with: clip)
-        case let .snippet(snippet):
-            let clipService = AppEnvironment.current.clipService
-            clipService.incrementChangeCount()
-            pasteService.copyToPasteboard(with: snippet.content)
-            clipService.syncChangeCountToPasteboard()
-            pasteService.paste()
         }
         let popover = searchPopoverController
         searchPopoverController = nil

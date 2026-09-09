@@ -20,22 +20,13 @@ struct Constants {
         #else
             static let name = "Clipy"
         #endif
+
         static let appcastURL = URL(string: "https://raw.githubusercontent.com/Proximity333/Clipy/develop/appcast.xml")!
     }
 
     struct Menu {
         static let clip = "ClipMenu"
         static let history = "HistoryMenu"
-        static let snippet = "SnippetsMenu"
-    }
-
-    struct Common {
-        static let index = "index"
-        static let title = "title"
-        static let snippets = "snippets"
-        static let content = "content"
-        static let selector = "selector"
-        static let draggedDataType = "public.data"
     }
 
     struct UserDefaults {
@@ -51,7 +42,6 @@ struct Constants {
         static let showStatusItem = "kCPYPrefShowStatusItemKey"
         static let overwriteSameHistory = "kCPYPrefOverwriteSameHistroy"
         static let copySameHistory = "kCPYPrefCopySameHistroy"
-        static let suppressAlertForDeleteSnippet = "kCPYSuppressAlertForDeleteSnippet"
         static let excludeApplications = "kCPYExcludeApplications"
         static let collectCrashReport = "kCPYCollectCrashReport"
         static let showColorPreviewInTheMenu = "kCPYPrefShowColorPreviewInTheMenu"
@@ -66,25 +56,9 @@ struct Constants {
         static let checkInterval = "kCPYUpdateCheckIntervalKey"
     }
 
-    struct Notification {
-        static let closeSnippetEditor = "kCPYSnippetEditorWillCloseNotification"
-    }
-
-    struct Xml {
-        static let fileType = "xml"
-        static let type = "type"
-        static let rootElement = "folders"
-        static let folderElement = "folder"
-        static let snippetElement = "snippet"
-        static let titleElement = "title"
-        static let snippetsElement = "snippets"
-        static let contentElement = "content"
-    }
-
     struct HotKey {
         static let mainKeyCombo = "kCPYHotKeyMainKeyCombo"
         static let historyKeyCombo = "kCPYHotKeyHistoryKeyCombo"
-        static let snippetKeyCombo = "kCPYHotKeySnippetKeyCombo"
         static let migrateNewKeyCombo = "kCPYMigrateNewKeyCombo"
         static let folderKeyCombos = "kCPYFolderKeyCombos"
         static let clearHistoryKeyCombo = "kCPYClearHistoryKeyCombo"

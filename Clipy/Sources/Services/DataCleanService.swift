@@ -48,14 +48,16 @@ final class DataCleanService {
         let clips = realm.objects(CPYClip.self).sorted(byKeyPath: #keyPath(CPYClip.updateTime), ascending: false)
         let maxHistorySize = AppEnvironment.current.defaults.integer(forKey: Constants.UserDefaults.maxHistorySize)
 
-        if clips.count <= maxHistorySize { return realm.objects(CPYClip.self).filter("FALSEPREDICATE") }
+        // Favorites are pinned: they neither consume the quota nor get deleted.
+        let cleanableClips = clips.filter("isFavorite == false")
+        if cleanableClips.count <= maxHistorySize { return realm.objects(CPYClip.self).filter("FALSEPREDICATE") }
         // Delete first clip
-        let lastClip = clips[maxHistorySize - 1]
+        let lastClip = cleanableClips[maxHistorySize - 1]
         if lastClip.isInvalidated { return realm.objects(CPYClip.self).filter("FALSEPREDICATE") }
 
         // Deletion target
         let updateTime = lastClip.updateTime
-        let targetClips = realm.objects(CPYClip.self).filter("updateTime < %d", updateTime)
+        let targetClips = realm.objects(CPYClip.self).filter("updateTime < %d AND isFavorite == false", updateTime)
 
         return targetClips
     }

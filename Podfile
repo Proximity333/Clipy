@@ -14,12 +14,11 @@ target 'Clipy' do
   pod 'KeyHolder'
   pod 'Magnet'
   pod 'RxScreeen', '~> 2.2'
-  pod 'AEXML'
   pod 'LetsMove'
   pod 'SwiftHEXColors'
   # Utility
   pod 'BartyCrouch'
-  pod 'SwiftLint'
+  pod 'SwiftLint', '~> 0.65.1'
   pod 'SwiftGen'
 
   target 'ClipyTests' do

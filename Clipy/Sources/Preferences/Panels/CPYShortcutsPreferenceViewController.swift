@@ -19,7 +19,6 @@ class CPYShortcutsPreferenceViewController: NSViewController {
     // MARK: - Properties
     @IBOutlet private weak var mainShortcutRecordView: RecordView!
     @IBOutlet private weak var historyShortcutRecordView: RecordView!
-    @IBOutlet private weak var snippetShortcutRecordView: RecordView!
     @IBOutlet private weak var clearHistoryShortcutRecordView: RecordView!
 
     // MARK: - Initialize
@@ -27,7 +26,6 @@ class CPYShortcutsPreferenceViewController: NSViewController {
         super.loadView()
         mainShortcutRecordView.delegate = self
         historyShortcutRecordView.delegate = self
-        snippetShortcutRecordView.delegate = self
         clearHistoryShortcutRecordView.delegate = self
         prepareHotKeys()
     }
@@ -39,7 +37,6 @@ private extension CPYShortcutsPreferenceViewController {
     func prepareHotKeys() {
         mainShortcutRecordView.keyCombo = AppEnvironment.current.hotKeyService.mainKeyCombo
         historyShortcutRecordView.keyCombo = AppEnvironment.current.hotKeyService.historyKeyCombo
-        snippetShortcutRecordView.keyCombo = AppEnvironment.current.hotKeyService.snippetKeyCombo
         clearHistoryShortcutRecordView.keyCombo = AppEnvironment.current.hotKeyService.clearHistoryKeyCombo
     }
 }
@@ -60,8 +57,6 @@ extension CPYShortcutsPreferenceViewController: RecordViewDelegate {
             AppEnvironment.current.hotKeyService.change(with: .main, keyCombo: keyCombo)
         case historyShortcutRecordView:
             AppEnvironment.current.hotKeyService.change(with: .history, keyCombo: keyCombo)
-        case snippetShortcutRecordView:
-            AppEnvironment.current.hotKeyService.change(with: .snippet, keyCombo: keyCombo)
         case clearHistoryShortcutRecordView:
             AppEnvironment.current.hotKeyService.changeClearHistoryKeyCombo(keyCombo)
         default: break

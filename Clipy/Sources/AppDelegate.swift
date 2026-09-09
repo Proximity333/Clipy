@@ -54,11 +54,6 @@ class AppDelegate: NSObject, NSMenuItemValidation {
         CPYPreferencesWindowController.sharedController.showWindow(self)
     }
 
-    @objc func showSnippetEditorWindow() {
-        NSApp.activate(ignoringOtherApps: true)
-        CPYSnippetsEditorWindowController.sharedController.showWindow(self)
-    }
-
     @objc func terminate() {
         terminateApplication()
     }
@@ -102,23 +97,6 @@ class AppDelegate: NSObject, NSMenuItemValidation {
         }
 
         AppEnvironment.current.pasteService.paste(with: clip)
-    }
-
-    @objc func selectSnippetMenuItem(_ sender: AnyObject) {
-        CPYUtilities.sendCustomLog(with: "selectSnippetMenuItem")
-        guard let primaryKey = sender.representedObject as? String else {
-            CPYUtilities.sendCustomLog(with: "Cannot fetch snippet primary key")
-            NSSound.beep()
-            return
-        }
-        let realm = try! Realm()
-        guard let snippet = realm.object(ofType: CPYSnippet.self, forPrimaryKey: primaryKey) else {
-            CPYUtilities.sendCustomLog(with: "Cannot fetch snippet data")
-            NSSound.beep()
-            return
-        }
-        AppEnvironment.current.pasteService.copyToPasteboard(with: snippet.content)
-        AppEnvironment.current.pasteService.paste()
     }
 
     func terminateApplication() {

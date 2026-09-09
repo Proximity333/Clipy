@@ -25,6 +25,7 @@ final class CPYClip: Object {
     @objc dynamic var isColorCode = false
     @objc dynamic var sourceBundleIdentifier = ""
     @objc dynamic var sourceAppName = ""
+    @objc dynamic var isFavorite = false
 
     // MARK: Primary Key
     override static func primaryKey() -> String? {

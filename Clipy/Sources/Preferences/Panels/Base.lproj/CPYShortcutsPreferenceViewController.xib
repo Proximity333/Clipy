@@ -10,7 +10,6 @@
                 <outlet property="clearHistoryShortcutRecordView" destination="pCf-EG-Cp9" id="K22-8R-Gk9"/>
                 <outlet property="historyShortcutRecordView" destination="hDA-gc-n3S" id="fzg-O8-Fze"/>
                 <outlet property="mainShortcutRecordView" destination="ABK-GW-Xwm" id="Jr7-Dz-hqZ"/>
-                <outlet property="snippetShortcutRecordView" destination="q8v-jS-CAr" id="Ay0-Zr-azr"/>
                 <outlet property="view" destination="Hz6-mo-xeY" id="0bl-1N-x8E"/>
             </connections>
         </customObject>
@@ -30,11 +29,11 @@
                     </textFieldCell>
                 </textField>
                 <view fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uTq-IP-dYk">
-                    <rect key="frame" x="44" y="96" width="392" height="140"/>
+                    <rect key="frame" x="44" y="144" width="392" height="92"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <subviews>
                         <textField verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Vzz-Iq-77h">
-                            <rect key="frame" x="15" y="62" width="121" height="17"/>
+                            <rect key="frame" x="15" y="14" width="121" height="17"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="History:" id="Abl-cO-JwU">
                                 <font key="font" metaFont="system"/>
@@ -43,7 +42,7 @@
                             </textFieldCell>
                         </textField>
                         <textField verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="oYq-Bg-KGQ">
-                            <rect key="frame" x="15" y="109" width="121" height="17"/>
+                            <rect key="frame" x="15" y="61" width="121" height="17"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Main:" id="5sL-G8-1io">
                                 <font key="font" metaFont="system"/>
@@ -51,17 +50,8 @@
                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                             </textFieldCell>
                         </textField>
-                        <textField verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ixj-RO-bKW">
-                            <rect key="frame" x="15" y="13" width="121" height="17"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Snippets:" id="fXr-ry-5ds">
-                                <font key="font" metaFont="system"/>
-                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                            </textFieldCell>
-                        </textField>
                         <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ABK-GW-Xwm" customClass="RecordView" customModule="KeyHolder">
-                            <rect key="frame" x="142" y="101" width="250" height="34"/>
+                            <rect key="frame" x="142" y="53" width="250" height="34"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <userDefinedRuntimeAttributes>
                                 <userDefinedRuntimeAttribute type="color" keyPath="tintColor">
@@ -82,24 +72,6 @@
                             </userDefinedRuntimeAttributes>
                         </customView>
                         <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hDA-gc-n3S" customClass="RecordView" customModule="KeyHolder">
-                            <rect key="frame" x="142" y="53" width="250" height="34"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <userDefinedRuntimeAttributes>
-                                <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
-                                    <real key="value" value="17"/>
-                                </userDefinedRuntimeAttribute>
-                                <userDefinedRuntimeAttribute type="color" keyPath="tintColor">
-                                    <color key="value" name="controlAccentColor" catalog="System" colorSpace="catalog"/>
-                                </userDefinedRuntimeAttribute>
-                                <userDefinedRuntimeAttribute type="color" keyPath="borderColor">
-                                    <color key="value" name="separatorColor" catalog="System" colorSpace="catalog"/>
-                                </userDefinedRuntimeAttribute>
-                                <userDefinedRuntimeAttribute type="number" keyPath="borderWidth">
-                                    <real key="value" value="1"/>
-                                </userDefinedRuntimeAttribute>
-                            </userDefinedRuntimeAttributes>
-                        </customView>
-                        <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="q8v-jS-CAr" customClass="RecordView" customModule="KeyHolder">
                             <rect key="frame" x="142" y="5" width="250" height="34"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <userDefinedRuntimeAttributes>
